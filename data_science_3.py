@@ -6,14 +6,15 @@ from reportlab.platypus import Paragraph, Frame, BaseDocTemplate, PageTemplate
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 import sys
-import os
 from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
 from reportlab import pdfbase
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
+import os
+from reportlab.lib.utils import simpleSplit  # Для отладки
 
 # --- 1. Настройка API ключа и выбор модели ---
-YOUR_API_KEY = "AIzaSyDhTRGV7c7ePDNA2G1PtvjNf-Xvmy-zy-Q"  # ***** ВСТАВЬТЕ СВОЙ ДЕЙСТВИТЕЛЬНЫЙ КЛЮЧ Google Gemini  ЗДЕСЬ *****
+YOUR_API_KEY = "AIzaSyDhTRGV7c7ePDNA2G1PtvjNf-Xvmy-zy-Q"  # ***** ВСТАВЬТЕ СВОЙ КЛЮЧ ЗДЕСЬ *****
 try:
     genai.configure(api_key=YOUR_API_KEY)
     model = genai.GenerativeModel('gemini-1.5-pro-latest')
@@ -27,7 +28,10 @@ class UserData:
         self.name = name
         self.phone = phone
         self.address = address
-        self
+        self.has_experience = has_experience
+        self.experience_count = experience_count
+        self.experiences = experiences
+        self.about_me = about_me
         self.achievements = achievements
 
 class Experience:
@@ -109,6 +113,7 @@ def setup_fonts():
     """Настраивает шрифты для reportlab, обрабатывая возможные ошибки."""
     script_dir = os.path.dirname(os.path.abspath(__file__))
     font_path = os.path.join(script_dir, 'DejaVuSans.ttf')  # Попробуем сначала этот путь
+
     if not os.path.exists(font_path):
         font_path = os.path.join(script_dir, 'fonts', 'DejaVuSans.ttf')  # Если не нашли, ищем в 'fonts'
 
@@ -118,11 +123,11 @@ def setup_fonts():
 
     try:
         pdfmetrics.registerFont(TTFont('DejaVuSans', font_path))
-        return 'DejaVuSans'  # Возвращаем имя шрифта для использования в стилях
+        return 'DejaVuSans'
     except Exception as e:
         print(f"Error registering font: {e}, using fallback.", file=sys.stderr)
-        pdfmetrics.registerFont(pdfmetrics.standardFonts['Helvetica'])  # Fallback
-        return 'Helvetica'  # Возвращаем имя запасного шрифта
+        pdfmetrics.registerFont(pdfmetrics.standardFonts['Helvetica'])
+        return 'Helvetica'
 
 # --- 6. Функция для создания PDF из текста резюме ---
 def create_pdf_resume(resume_text, filename="resume.pdf"):
@@ -256,4 +261,4 @@ def page_generate_resume():  # Переименовано в page_generate_resum
             )
 
 if __name__ == "__main__":
-    page_generate_resume() 
+    page_generate_resume()  # Вызываем функцию напрямую, если запускаем этот файл
