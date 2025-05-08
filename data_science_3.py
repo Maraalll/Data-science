@@ -1,3 +1,4 @@
+import streamlit as st
 import google.generativeai as genai
 import io
 from reportlab.lib.pagesizes import letter
@@ -112,22 +113,28 @@ def generate_resume(user_data):
 def setup_fonts():
     """Настраивает шрифты для reportlab, обрабатывая возможные ошибки."""
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    font_path = os.path.join(script_dir, 'DejaVuSans.ttf')  # Попробуем сначала этот путь
+    font_dir = os.path.join(script_dir, 'fonts')
+    font_path = os.path.join(font_dir, 'DejaVuSans.ttf')  # Ensure 'DejaVuSans.ttf' is in a 'fonts' folder
 
+    # Проверяем, существует ли директория 'fonts'
+    if not os.path.exists(font_dir):
+        os.makedirs(font_dir)
+        # ПРИМЕЧАНИЕ: Вам нужно поместить файл 'DejaVuSans.ttf' в эту директорию
+        st.warning("Пожалуйста, создайте директорию 'fonts' и поместите туда файл 'DejaVuSans.ttf'.")
+        return 'Helvetica'  # Возвращаем запасной шрифт
+
+    # Проверяем, существует ли файл шрифта
     if not os.path.exists(font_path):
-        font_path = os.path.join(script_dir, 'fonts', 'DejaVuSans.ttf')  # Если не нашли, ищем в 'fonts'
-
-        if not os.path.exists(font_path):
-            st.warning(f"Файл шрифта не найден ни в '{script_dir}' ни в '{os.path.join(script_dir, 'fonts')}' . Используется стандартный шрифт.")
-            return 'Helvetica'
+        st.warning(f"Файл шрифта не найден по пути: {font_path}. Используется стандартный шрифт.")
+        return 'Helvetica'  # Возвращаем запасной шрифт
 
     try:
         pdfmetrics.registerFont(TTFont('DejaVuSans', font_path))
-        return 'DejaVuSans'
+        return 'DejaVuSans'  # Возвращаем имя шрифта для использования в стилях
     except Exception as e:
         print(f"Error registering font: {e}, using fallback.", file=sys.stderr)
-        pdfmetrics.registerFont(pdfmetrics.standardFonts['Helvetica'])
-        return 'Helvetica'
+        pdfmetrics.registerFont(pdfmetrics.standardFonts['Helvetica'])  # Fallback
+        return 'Helvetica'  # Возвращаем имя запасного шрифта
 
 # --- 6. Функция для создания PDF из текста резюме ---
 def create_pdf_resume(resume_text, filename="resume.pdf"):
