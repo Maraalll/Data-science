@@ -1,4 +1,3 @@
-# Вызывimport streamlit as st
 import google.generativeai as genai
 import io
 from reportlab.lib.pagesizes import letter
