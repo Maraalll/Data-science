@@ -256,4 +256,4 @@ def page_generate_resume():  # Переименовано в page_generate_resum
             )
 
 if __name__ == "__main__":
-    page_generate_resume() аем функцию напрямую, если запускаем этот файл
+    page_generate_resume() 
