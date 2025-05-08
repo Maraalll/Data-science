@@ -1,4 +1,4 @@
-import streamlit as st
+# Вызывimport streamlit as st
 import google.generativeai as genai
 import io
 from reportlab.lib.pagesizes import letter
@@ -7,15 +7,14 @@ from reportlab.platypus import Paragraph, Frame, BaseDocTemplate, PageTemplate
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 import sys
+import os
 from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
 from reportlab import pdfbase
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-import os
-from reportlab.lib.utils import simpleSplit  # Для отладки
 
 # --- 1. Настройка API ключа и выбор модели ---
-YOUR_API_KEY = "AIzaSyDhTRGV7c7ePDNA2G1PtvjNf-Xvmy-zy-Q"  # ***** ВСТАВЬТЕ СВОЙ КЛЮЧ ЗДЕСЬ *****
+YOUR_API_KEY = "AIzaSyDhTRGV7c7ePDNA2G1PtvjNf-Xvmy-zy-Q"  # ***** ВСТАВЬТЕ СВОЙ ДЕЙСТВИТЕЛЬНЫЙ КЛЮЧ Google Gemini  ЗДЕСЬ *****
 try:
     genai.configure(api_key=YOUR_API_KEY)
     model = genai.GenerativeModel('gemini-1.5-pro-latest')
@@ -29,10 +28,7 @@ class UserData:
         self.name = name
         self.phone = phone
         self.address = address
-        self.has_experience = has_experience
-        self.experience_count = experience_count
-        self.experiences = experiences
-        self.about_me = about_me
+        self
         self.achievements = achievements
 
 class Experience:
@@ -113,20 +109,13 @@ def generate_resume(user_data):
 def setup_fonts():
     """Настраивает шрифты для reportlab, обрабатывая возможные ошибки."""
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    font_dir = os.path.join(script_dir, 'fonts')
-    font_path = os.path.join(font_dir, 'DejaVuSans.ttf')  # Ensure 'DejaVuSans.ttf' is in a 'fonts' folder
-
-    # Проверяем, существует ли директория 'fonts'
-    if not os.path.exists(font_dir):
-        os.makedirs(font_dir)
-        # ПРИМЕЧАНИЕ: Вам нужно поместить файл 'DejaVuSans.ttf' в эту директорию
-        st.warning("Пожалуйста, создайте директорию 'fonts' и поместите туда файл 'DejaVuSans.ttf'.")
-        return 'Helvetica'  # Возвращаем запасной шрифт
-
-    # Проверяем, существует ли файл шрифта
+    font_path = os.path.join(script_dir, 'DejaVuSans.ttf')  # Попробуем сначала этот путь
     if not os.path.exists(font_path):
-        st.warning(f"Файл шрифта не найден по пути: {font_path}. Используется стандартный шрифт.")
-        return 'Helvetica'  # Возвращаем запасной шрифт
+        font_path = os.path.join(script_dir, 'fonts', 'DejaVuSans.ttf')  # Если не нашли, ищем в 'fonts'
+
+        if not os.path.exists(font_path):
+            st.warning(f"Файл шрифта не найден ни в '{script_dir}' ни в '{os.path.join(script_dir, 'fonts')}' . Используется стандартный шрифт.")
+            return 'Helvetica'
 
     try:
         pdfmetrics.registerFont(TTFont('DejaVuSans', font_path))
@@ -268,4 +257,4 @@ def page_generate_resume():  # Переименовано в page_generate_resum
             )
 
 if __name__ == "__main__":
-    page_generate_resume()  # Вызываем функцию напрямую, если запускаем этот файл
+    page_generate_resume() аем функцию напрямую, если запускаем этот файл
