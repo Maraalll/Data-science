@@ -113,20 +113,11 @@ def generate_resume(user_data):
 def setup_fonts():
     """Настраивает шрифты для reportlab, обрабатывая возможные ошибки."""
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    font_dir = os.path.join(script_dir, 'fonts')
-    font_path = os.path.join(font_dir, 'DejaVuSans.ttf')  # Ensure 'DejaVuSans.ttf' is in a 'fonts' folder
+    font_path = os.path.join(script_dir, 'DejaVuSans.ttf')  # Ищем шрифт в той же директории
 
-    # Проверяем, существует ли директория 'fonts'
-    if not os.path.exists(font_dir):
-        os.makedirs(font_dir)
-        # ПРИМЕЧАНИЕ: Вам нужно поместить файл 'DejaVuSans.ttf' в эту директорию
-        st.warning("Пожалуйста, создайте директорию 'fonts' и поместите туда файл 'DejaVuSans.ttf'.")
-        return 'Helvetica'  # Возвращаем запасной шрифт
-
-    # Проверяем, существует ли файл шрифта
     if not os.path.exists(font_path):
         st.warning(f"Файл шрифта не найден по пути: {font_path}. Используется стандартный шрифт.")
-        return 'Helvetica'  # Возвращаем запасной шрифт
+        return 'Helvetica'
 
     try:
         pdfmetrics.registerFont(TTFont('DejaVuSans', font_path))
