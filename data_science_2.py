@@ -3,16 +3,16 @@ import pandas as pd
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import json
-# Подключение к Google Sheets
+
+# Подключение к Google Sheets через секреты
 SCOPE = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-SPREADSHEET_NAME = "reviews"
 
 @st.cache_resource
 def connect_to_gsheet():
     service_account_info = st.secrets["google_service_account"]
     credentials = ServiceAccountCredentials.from_json_keyfile_dict(service_account_info, SCOPE)
     client = gspread.authorize(credentials)
-    sheet = client.open(SPREADSHEET_NAME).sheet1
+    sheet = client.open("reviews").sheet1
     return sheet
 
 # Загрузка данных
@@ -31,9 +31,24 @@ def load_data():
 # Сохранение нового отзыва или вопроса
 def save_review_row(row_data):
     sheet = connect_to_gsheet()
-    sheet.append_row([row_data.get("company", ""), row_data.get("question_text", ""), row_data.get("answer_text", ""),
-                      row_data.get("user_name", ""), row_data.get("worked", ""), row_data.get("review_text", ""),
-                      row_data.get("work_conditions", ""), row_data.get("culture", ""), row_data.get("management", "")])
+    sheet.append_row([
+        row_data.get("company", ""),
+        row_data.get("question_text", ""),
+        row_data.get("answer_text", ""),
+        row_data.get("user_name", ""),
+        row_data.get("worked", ""),
+        row_data.get("review_text", ""),
+        row_data.get("work_conditions", ""),
+        row_data.get("culture", ""),
+        row_data.get("management", "")
+    ])
+
+# Обновление ответа на вопрос
+def save_answer_to_question(question_text, answer):
+    sheet = connect_to_gsheet()
+    cell = sheet.find(question_text)
+    if cell:
+        sheet.update_cell(cell.row, 3, answer)  # 3 = column C (answer_text)
 
 # Расчет среднего рейтинга
 def update_average_rating(company_name):
@@ -51,7 +66,8 @@ def update_average_rating(company_name):
     else:
         return "Нет отзывов", "Нет отзывов", "Нет отзывов", "Нет отзывов"
 
-# Отображение вопросов и ответов
+# Отображение вопросов без ответов и возможность ответить
+
 def display_questions_and_answers(company_name, worked):
     company_reviews = st.session_state.reviews_df[st.session_state.reviews_df['company'] == company_name]
     unanswered = company_reviews[company_reviews['answer_text'].isna() | (company_reviews['answer_text'] == '')]
@@ -60,16 +76,15 @@ def display_questions_and_answers(company_name, worked):
     else:
         st.write("Вопросы без ответов:")
         for idx, row in unanswered.iterrows():
-            st.write(f"**Вопрос:** {row['question_text']}")
+            st.write(f"**{row['user_name']} спрашивает:** {row['question_text']}")
             if worked == 'Да':
                 answer = st.text_area("Ответить на вопрос:", key=f"answer_{idx}")
                 if st.button("Отправить ответ", key=f"submit_answer_{idx}"):
-                    sheet = connect_to_gsheet()
-                    cell = sheet.find(row['question_text'])
-                    sheet.update_cell(cell.row, 3, answer)
+                    save_answer_to_question(row['question_text'], answer)
                     st.success("Ответ отправлен! Обновите страницу для обновления списка.")
 
 # Отображение отзывов
+
 def display_employee_reviews(company_name):
     reviews = st.session_state.reviews_df
     filtered = reviews[(reviews['company'] == company_name) & (reviews['worked'] == 'Да') & (reviews['review_text'] != '')]
@@ -79,6 +94,19 @@ def display_employee_reviews(company_name):
         st.write("Отзывы сотрудников:")
         for _, row in filtered.iterrows():
             st.write(f"▶️ {row['user_name']} говорит: {row['review_text']}")
+
+# Отображение всех ответов сотрудников
+
+def display_answered_questions(company_name):
+    company_reviews = st.session_state.reviews_df[st.session_state.reviews_df['company'] == company_name]
+    answered = company_reviews[company_reviews['answer_text'].notna() & (company_reviews['answer_text'] != '')]
+    if answered.empty:
+        st.write("Пока нет ответов от сотрудников.")
+    else:
+        st.write("Ответы сотрудников на вопросы:")
+        for _, row in answered.iterrows():
+            st.markdown(f"**{row['user_name']} ответил на вопрос:** _{row['question_text']}_")
+            st.write(f"💬 {row['answer_text']}")
 
 # Основная функция
 
@@ -150,5 +178,9 @@ def page_rate_company():
 
         if st.checkbox("Показать отзывы сотрудников"):
             display_employee_reviews(company_name)
+
+        if st.checkbox("Показать ответы сотрудников"):
+            display_answered_questions(company_name)
     else:
         st.warning("Пожалуйста, введите ваше имя и фамилию для продолжения.")
+
