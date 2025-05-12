@@ -1,19 +1,21 @@
-import gspread
 import streamlit as st
 import pandas as pd
+import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
 # Подключение к Google Sheets
+SCOPE = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+SPREADSHEET_NAME = "reviews"
 
+@st.cache_resource
 def connect_to_gsheet():
-    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["gcp_service_account"], scope)
-    client = gspread.authorize(creds)
-    sheet = client.open("reviews").sheet1  # Убедись, что таблица называется "reviews"
+    credentials = ServiceAccountCredentials.from_json_keyfile_name("creds.json", SCOPE)
+    client = gspread.authorize(credentials)
+    sheet = client.open(SPREADSHEET_NAME).sheet1
     return sheet
 
-# Загрузка данных из таблицы
-
+# Загрузка данных
+@st.cache_data(show_spinner=False)
 def load_data():
     try:
         companies_df = pd.read_csv('companies.csv')
@@ -25,17 +27,16 @@ def load_data():
         st.error(f"Ошибка при загрузке данных: {e}")
         return None, None
 
-# Добавление новой строки в таблицу
-
-def save_review_row(row_dict):
+# Сохранение нового отзыва или вопроса
+def save_review_row(row_data):
     sheet = connect_to_gsheet()
-    sheet.append_row(list(row_dict.values()))
+    sheet.append_row([row_data.get("company", ""), row_data.get("question_text", ""), row_data.get("answer_text", ""),
+                      row_data.get("user_name", ""), row_data.get("worked", ""), row_data.get("review_text", ""),
+                      row_data.get("work_conditions", ""), row_data.get("culture", ""), row_data.get("management", "")])
 
-# Обновление среднего рейтинга
-
+# Расчет среднего рейтинга
 def update_average_rating(company_name):
     company_reviews = st.session_state.reviews_df[st.session_state.reviews_df['company'] == company_name]
-
     if len(company_reviews) > 0:
         try:
             avg_work_conditions = company_reviews['work_conditions'].replace('', pd.NA).dropna().astype(float).mean()
@@ -44,48 +45,41 @@ def update_average_rating(company_name):
             avg_overall = (avg_work_conditions + avg_culture + avg_management) / 3
             return avg_work_conditions, avg_culture, avg_management, avg_overall
         except Exception as e:
-            st.warning(f"Ошибка при расчёте среднего рейтинга: {e}")
+            st.warning(f"Ошибка при расчёте рейтинга: {e}")
             return "Недостаточно данных", "Недостаточно данных", "Недостаточно данных", "Недостаточно данных"
     else:
         return "Нет отзывов", "Нет отзывов", "Нет отзывов", "Нет отзывов"
 
-# Показ отзывов
-
-def display_employee_reviews(company_name):
-    reviews = st.session_state.reviews_df
-    filtered = reviews[(reviews['company'] == company_name) & (reviews['worked'] == 'Да') & (reviews['review_text'].notna())]
-
-    st.write(f"### Отзывы сотрудников о {company_name}:")
-    if filtered.empty:
-        st.write("Пока нет отзывов от работников этой компании.")
-    else:
-        for _, row in filtered.iterrows():
-            st.markdown(f"**{row['user_name']}**: {row['review_text']}")
-            st.markdown(f"  - Условия труда: {row['work_conditions']}, Культура: {row['culture']}, Управление: {row['management']}")
-
-# Вопросы и ответы
-
+# Отображение вопросов и ответов
 def display_questions_and_answers(company_name, worked):
     company_reviews = st.session_state.reviews_df[st.session_state.reviews_df['company'] == company_name]
-
-    if company_reviews.empty:
-        st.write("Нет вопросов для этой компании.")
+    unanswered = company_reviews[company_reviews['answer_text'].isna() | (company_reviews['answer_text'] == '')]
+    if unanswered.empty:
+        st.write("Нет вопросов без ответов.")
     else:
-        st.write(f"Вопросы и ответы для компании {company_name}:")
-        for idx, row in company_reviews.iterrows():
-            if pd.notna(row['question_text']):
-                st.write(f"Вопрос: {row['question_text']}")
-                if pd.notna(row['answer_text']):
-                    st.write(f"Ответ: {row['answer_text']}")
-                else:
-                    st.write("Ответ еще не дан.")
-                    if worked == 'Да':
-                        answer = st.text_area(f"Ответить на вопрос: {row['question_text']}", key=f"answer_{idx}")
-                        if st.button(f"Отправить ответ", key=f"submit_answer_{idx}"):
-                            # ❗ Нельзя обновлять ячейку напрямую — для этого нужен другой подход
-                            st.warning("Редактирование ответов через Google Sheets пока не реализовано. Только добавление новых строк.")
+        st.write("Вопросы без ответов:")
+        for idx, row in unanswered.iterrows():
+            st.write(f"**{row['user_name']} спрашивает:** {row['question_text']}")
+            if worked == 'Да':
+                answer = st.text_area("Ответить на вопрос:", key=f"answer_{idx}")
+                if st.button("Отправить ответ", key=f"submit_answer_{idx}"):
+                    sheet = connect_to_gsheet()
+                    cell = sheet.find(row['question_text'])
+                    sheet.update_cell(cell.row, 3, answer)
+                    st.success("Ответ отправлен! Обновите страницу для обновления списка.")
 
-# Главная страница
+# Отображение отзывов
+def display_employee_reviews(company_name):
+    reviews = st.session_state.reviews_df
+    filtered = reviews[(reviews['company'] == company_name) & (reviews['worked'] == 'Да') & (reviews['review_text'] != '')]
+    if filtered.empty:
+        st.write("Нет отзывов о компании.")
+    else:
+        st.write("Отзывы сотрудников:")
+        for _, row in filtered.iterrows():
+            st.write(f"▶️ {row['user_name']} говорит: {row['review_text']}")
+
+# Основная функция
 
 def page_rate_company():
     st.title("Оценка компании")
@@ -119,10 +113,10 @@ def page_rate_company():
                 new_question = {
                     'company': company_name,
                     'question_text': question,
-                    'answer_text': None,
+                    'answer_text': '',
                     'user_name': first_name + ' ' + last_name,
                     'worked': 'Нет',
-                    'review_text': None,
+                    'review_text': '',
                     'work_conditions': '',
                     'culture': '',
                     'management': ''
@@ -138,8 +132,8 @@ def page_rate_company():
             if st.button("Отправить отзыв"):
                 new_review = {
                     'company': company_name,
-                    'question_text': None,
-                    'answer_text': None,
+                    'question_text': '',
+                    'answer_text': '',
                     'user_name': first_name + ' ' + last_name,
                     'worked': 'Да',
                     'review_text': review,
@@ -157,4 +151,3 @@ def page_rate_company():
             display_employee_reviews(company_name)
     else:
         st.warning("Пожалуйста, введите ваше имя и фамилию для продолжения.")
-
