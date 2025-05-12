@@ -1,4 +1,5 @@
 import gspread
+import streamlit as st
 from oauth2client.service_account import ServiceAccountCredentials
 
 # Подключение к Google Sheets
