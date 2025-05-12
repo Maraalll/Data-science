@@ -1,11 +1,9 @@
 import streamlit as st
 import data_science_1
-import data_science_2
+import company_reviews_gsheets as data_science_2
 import data_science_3
 
 st.set_page_config(page_title="Платформа для поиска работы", page_icon="💼", layout="wide")
-
-# --- Custom CSS for Styling ---
 
 st.sidebar.title("Навигация")
 page = st.sidebar.radio("Выберите страницу:", [
