@@ -76,7 +76,7 @@ def display_questions_and_answers(company_name, worked):
     else:
         st.write("Вопросы без ответов:")
         for idx, row in unanswered.iterrows():
-            st.write(f"**{row['user_name']} спрашивает:** {row['question_text']}")
+            st.write(f"**Вопрос: ** {row['question_text']}")
             if worked == 'Да':
                 answer = st.text_area("Ответить на вопрос:", key=f"answer_{idx}")
                 if st.button("Отправить ответ", key=f"submit_answer_{idx}"):
@@ -93,7 +93,7 @@ def display_employee_reviews(company_name):
     else:
         st.write("Отзывы сотрудников:")
         for _, row in filtered.iterrows():
-            st.write(f"▶️ {row['user_name']} говорит: {row['review_text']}")
+            st.write(f"Отзыв: {row['review_text']}")
 
 # Отображение всех ответов сотрудников
 
@@ -105,7 +105,7 @@ def display_answered_questions(company_name):
     else:
         st.write("Ответы сотрудников на вопросы:")
         for _, row in answered.iterrows():
-            st.markdown(f"**{row['user_name']} ответил на вопрос:** _{row['question_text']}_")
+            st.markdown(f"**Ответ: ** _{row['question_text']}_")
             st.write(f"💬 {row['answer_text']}")
 
 # Основная функция
