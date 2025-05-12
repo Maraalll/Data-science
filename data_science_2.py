@@ -35,12 +35,17 @@ def save_review_row(row_dict):
 
 def update_average_rating(company_name):
     company_reviews = st.session_state.reviews_df[st.session_state.reviews_df['company'] == company_name]
+
     if len(company_reviews) > 0:
-        avg_work_conditions = company_reviews['work_conditions'].astype(float).mean()
-        avg_culture = company_reviews['culture'].astype(float).mean()
-        avg_management = company_reviews['management'].astype(float).mean()
-        avg_overall = (avg_work_conditions + avg_culture + avg_management) / 3
-        return avg_work_conditions, avg_culture, avg_management, avg_overall
+        try:
+            avg_work_conditions = company_reviews['work_conditions'].replace('', pd.NA).dropna().astype(float).mean()
+            avg_culture = company_reviews['culture'].replace('', pd.NA).dropna().astype(float).mean()
+            avg_management = company_reviews['management'].replace('', pd.NA).dropna().astype(float).mean()
+            avg_overall = (avg_work_conditions + avg_culture + avg_management) / 3
+            return avg_work_conditions, avg_culture, avg_management, avg_overall
+        except Exception as e:
+            st.warning(f"Ошибка при расчёте среднего рейтинга: {e}")
+            return "Недостаточно данных", "Недостаточно данных", "Недостаточно данных", "Недостаточно данных"
     else:
         return "Нет отзывов", "Нет отзывов", "Нет отзывов", "Нет отзывов"
 
