@@ -173,7 +173,7 @@ def page_rate_company():
                 save_review_row(new_review)
                 st.success("Ваш отзыв был отправлен!")
 
-        if st.checkbox("Показать вопросы и ответы"):
+        if st.checkbox("Вопросы без ответа"):
             display_questions_and_answers(company_name, worked)
 
         if st.checkbox("Показать отзывы сотрудников"):
