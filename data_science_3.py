@@ -65,6 +65,9 @@ def collect_user_data():
             description = st.text_area("Описание работы:", key=f"description_{i}")
             user_data.experiences.append(Experience(year, company, position, description))
 
+    # ✅ ДОБАВЛЕНО — поле "О себе" для тех, у кого есть опыт
+        user_data.about_me = st.text_area("Расскажите о себе (навыки, цели, сильные стороны):", height=100)
+
     else:
         user_data.about_me = st.text_area("Расскажите о себе (навыки, цели, сильные стороны):", height=100)
         user_data.achievements = st.text_area("Перечислите ваши достижения:", height=100)
