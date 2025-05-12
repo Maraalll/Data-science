@@ -1,8 +1,7 @@
 import streamlit as st
 import data_science_1
-import data_science_2 as company_reviews_gsheets
+import data_science_2
 import data_science_3
-
 st.set_page_config(page_title="Платформа для поиска работы", page_icon="💼", layout="wide")
 
 st.sidebar.title("Навигация")
