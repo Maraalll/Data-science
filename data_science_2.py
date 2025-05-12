@@ -60,7 +60,7 @@ def display_questions_and_answers(company_name, worked):
     else:
         st.write("Вопросы без ответов:")
         for idx, row in unanswered.iterrows():
-            st.write(f"**{row['user_name']} спрашивает:** {row['question_text']}")
+            st.write(f"**Вопрос:** {row['question_text']}")
             if worked == 'Да':
                 answer = st.text_area("Ответить на вопрос:", key=f"answer_{idx}")
                 if st.button("Отправить ответ", key=f"submit_answer_{idx}"):
