@@ -55,6 +55,7 @@ def collect_user_data():
     user_data.has_experience = st.radio("Есть ли у вас опыт работы по желаемой должности?", ("Да", "Нет"))
 
     if user_data.has_experience == "Да":
+        user_data.about_me = st.text_area("Расскажите о себе (навыки, цели, сильные стороны):", height=100)
         user_data.experience_count = st.number_input("Сколько мест работы вы хотите указать?", min_value=1, value=1)
 
         for i in range(user_data.experience_count):
@@ -64,9 +65,6 @@ def collect_user_data():
             position = st.text_input("Должность:", key=f"position_{i}")
             description = st.text_area("Описание работы:", key=f"description_{i}")
             user_data.experiences.append(Experience(year, company, position, description))
-
-    # ✅ ДОБАВЛЕНО — поле "О себе" для тех, у кого есть опыт
-        user_data.about_me = st.text_area("Расскажите о себе (навыки, цели, сильные стороны):", height=100)
 
     else:
         user_data.about_me = st.text_area("Расскажите о себе (навыки, цели, сильные стороны):", height=100)
