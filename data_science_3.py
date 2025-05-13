@@ -46,29 +46,28 @@ class Experience:
 def collect_user_data():
     user_data = UserData()
 
-    st.title("Создание резюме")
+    st.title("📝 Создание резюме")
 
-    user_data.name = st.text_input("ФИО:")
-    user_data.phone = st.text_input("Номер телефона:")
-    user_data.address = st.text_input("Адрес:")
+    user_data.name = st.text_input("👤 ФИО:")
+    user_data.phone = st.text_input("📞 Номер телефона:")
+    user_data.address = st.text_input("🏠 Адрес:")
 
-    user_data.has_experience = st.radio("Есть ли у вас опыт работы по желаемой должности?", ("Да", "Нет"))
+    user_data.has_experience = st.radio("💼Есть ли у вас опыт работы по желаемой должности?", ("Да", "Нет"))
 
     if user_data.has_experience == "Да":
-        user_data.about_me = st.text_area("Расскажите о себе (навыки, цели, сильные стороны):", height=100)
+        user_data.about_me = st.text_area("🙋‍♀️Расскажите о себе (навыки, цели, сильные стороны):", height=100)
         user_data.experience_count = st.number_input("Сколько мест работы вы хотите указать?", min_value=1, value=1)
 
         for i in range(user_data.experience_count):
-            st.subheader(f"Опыт работы #{i + 1}")
-            year = st.text_input("Год:", key=f"year_{i}")
-            company = st.text_input("Компания:", key=f"company_{i}")
-            position = st.text_input("Должность:", key=f"position_{i}")
-            description = st.text_area("Описание работы:", key=f"description_{i}")
-            user_data.experiences.append(Experience(year, company, position, description))
+            st.subheader(f"📌 Опыт работы #{i + 1}")
+            year = st.text_input("📅 Год:", key=f"year_{i}")
+            company = st.text_input("🏢 Компания:", key=f"company_{i}")
+            position = st.text_input("🧑‍💼 Должность:", key=f"position_{i}")
+            description = st.text_area("📝 Описание работы:", key=f"description_{i}")
 
     else:
-        user_data.about_me = st.text_area("Расскажите о себе (навыки, цели, сильные стороны):", height=100)
-        user_data.achievements = st.text_area("Перечислите ваши достижения:", height=100)
+        user_data.about_me = st.text_area("🙋‍♀️ Расскажите о себе (навыки, цели, сильные стороны):", height=100)
+        user_data.achievements = st.text_area("🏆 Перечислите ваши достижения:", height=100)
 
     return user_data
 
@@ -237,16 +236,16 @@ def page_generate_resume():  # Переименовано в page_generate_resum
     else:
         st.session_state.user_data = collect_user_data()
 
-    if st.button("Сгенерировать резюме"):
+    if st.button("✨ Сгенерировать резюме"):
         if st.session_state.user_data.name and st.session_state.user_data.phone and st.session_state.user_data.address:
             st.session_state.generated_resume = generate_resume(st.session_state.user_data)
         else:
             st.warning("Пожалуйста, заполните основные данные (ФИО, телефон, адрес).")
 
     if 'generated_resume' in st.session_state:
-        st.text_area("Предварительный просмотр резюме (вы можете отредактировать, так же уберите '*, #'. Они все сохраняются в PDF, когда вы скачаете его)", st.session_state.generated_resume, height=400)
+        st.text_area("📄Предварительный просмотр резюме (вы можете отредактировать, так же уберите '*, #'. Они все сохраняются в PDF, когда вы скачаете его)", st.session_state.generated_resume, height=400)
 
-        if st.button("Скачать резюме в PDF"):
+        if st.button("📥 Скачать резюме в PDF"):
             if not st.session_state.generated_resume:
                 st.error("Ошибка: Невозможно создать PDF, резюме не сгенерировано.")
                 return
