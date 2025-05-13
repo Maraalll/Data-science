@@ -15,7 +15,7 @@ def connect_to_gsheet():
     sheet = client.open("reviews").sheet1
     return sheet
 
-# Загрузка данных
+
 @st.cache_data(show_spinner=False)
 def load_data():
     try:
