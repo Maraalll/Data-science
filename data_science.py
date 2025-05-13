@@ -35,7 +35,7 @@ page = st.sidebar.radio("📄 Выберите страницу:", [
 
 if page == "🔎 Поиск вакансий":
     data_science_1.page_find_vacancies()
-elif page == "🏢 Оценка компании":
+elif page == "🌟 Оценка компании":
     data_science_2.page_rate_company()
 elif page == "📝 Генератор резюме":
     data_science_3.page_generate_resume()
