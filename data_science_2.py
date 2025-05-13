@@ -101,7 +101,7 @@ def display_answered_questions(company_name):
             st.write(f"💬 {row['answer_text']}")
 
 def page_rate_company():
-    st.title("🏢 Оценка компании")
+    st.title("⭐ Оценка компании")
 
     if 'companies_df' not in st.session_state or 'reviews_df' not in st.session_state:
         st.session_state.companies_df, st.session_state.reviews_df = load_data()
