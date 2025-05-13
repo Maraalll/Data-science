@@ -12,7 +12,7 @@ st.markdown(
         background-size: cover;
         background-attachment: fixed;
         background-position: center;
-        color: white;
+        color: black;
     }
     .stButton>button {
         background-color: #c94f7c;
