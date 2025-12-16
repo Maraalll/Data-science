@@ -3,7 +3,7 @@ import pandas as pd
 
 prof_df = pd.read_csv('prof.csv', delimiter=';')
 
-df_new = pd.read_csv('hh_kazakhstan_final_dataset.csv')
+df_new = pd.read_csv('hh_kazakhstan_final_dataset.csv.gz')
 
 specialty_keywords = {
     "Диджитал маркетинг": ["маркетолог", "digital marketing", "SEO", "SMM", "контент-маркетинг", "онлайн-реклама", "веб-аналитика"],
