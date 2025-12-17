@@ -135,16 +135,12 @@ if st.button("🚀 Проверить соответствие"):
             st.write(f"**Опыт:** {row.get('experience', 'не указан')}")
             st.write(f"**Компания:** {row.get('company', '')}")
             st.write(f"[🔗 Перейти к вакансии]({row.get('url', '#')})")
-
-
-                matched, missing = skill_gap(user_skills, row["requirements"])
-
-                col1, col2 = st.columns(2)
-
-                with col1:
-                    st.markdown("### ✔ Совпадающие навыки")
-                    st.write(", ".join(sorted(matched)) if matched else "—")
-
-                with col2:
-                    st.markdown("### ❌ Недостающие навыки")
-                    st.write(", ".join(list(missing)[:10]) if missing else "—")
+            
+            matched, missing = skill_gap(user_skills, row["requirements"])
+            col1, col2 = st.columns(2)
+            with col1:
+                st.markdown("### ✔ Совпадающие навыки")
+                st.write(", ".join(sorted(matched)) if matched else "—")
+            with col2:
+                st.markdown("### ❌ Недостающие навыки")
+                st.write(", ".join(list(missing)[:10]) if missing else "—")
