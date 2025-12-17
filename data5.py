@@ -83,70 +83,56 @@ def skill_gap(user_text, vacancy_text):
 # =========================
 # 5. UI
 # =========================
-st.title("🎯 Skill Match & Vacancy Fit Score")
-st.write(
-    "ML-модуль, который показывает, **насколько вакансия подходит именно вам** "
-    "на основе анализа навыков и требований."
-)
-
-st.markdown("---")
-
-# User input
-user_skills = st.text_area(
-    "🧠 Введите ваши навыки (через пробел или запятую)",
-    placeholder="python sql pandas machine learning data analysis"
-)
-
-top_n = st.slider(
-    "🔢 Количество вакансий для анализа",
-    min_value=3,
-    max_value=10,
-    value=5
-)
-
-if st.button("🚀 Проверить соответствие"):
-
-    if not user_skills.strip():
-        st.warning("Введите навыки для анализа")
-    else:
-        results = match_vacancies(user_skills, top_n=top_n)
-
-        st.markdown("## ✅ Результаты")
-
-        for _, row in results.iterrows():
-            st.markdown("---")
-
-            st.subheader(row["name"])
-            st.progress(row["fit_score"] / 100)
-
-            st.write(f"**Fit Score:** {row['fit_score']}%")
-            st.write(f"**Опыт:** {row.get('experience', 'не указан')}")
-            st.write(f"**Компания:** {row.get('company', '')}")
-            st.write(f"[🔗 Перейти к вакансии]({row.get('url', '#')})")
-
-            matched, missing = skill_gap(user_skills, row["requirements"])
-
-            col1, col2 = st.columns(2)
-
-            with col1:
-                st.markdown("### ✔ Совпадающие навыки")
-                if matched:
-                    st.write(", ".join(sorted(matched)))
-                else:
-                    st.write("—")
-
-            with col2:
-                st.markdown("### ❌ Недостающие навыки")
-                if missing:
-                    st.write(", ".join(list(missing)[:10]))
-                else:
-                    st.write("—")
 def page_skill_match():
-    import streamlit as st
 
-    st.title("🎯 Skill Match / Fit")
-    st.write("Умный подбор вакансий по навыкам")
+    st.title("🎯 Skill Match & Vacancy Fit Score")
+    st.write(
+        "ML-модуль, который показывает, **насколько вакансия подходит именно вам** "
+        "на основе анализа навыков и требований."
+    )
 
-    # временно — просто проверка
-    st.success("Страница Skill Match работает ✅")
+    st.markdown("---")
 
+    user_skills = st.text_area(
+        "🧠 Введите ваши навыки (через пробел или запятую)",
+        placeholder="python sql pandas machine learning data analysis"
+    )
+
+    top_n = st.slider(
+        "🔢 Количество вакансий для анализа",
+        min_value=3,
+        max_value=10,
+        value=5
+    )
+
+    if st.button("🚀 Проверить соответствие"):
+
+        if not user_skills.strip():
+            st.warning("Введите навыки для анализа")
+        else:
+            results = match_vacancies(user_skills, top_n=top_n)
+
+            st.markdown("## ✅ Результаты")
+
+            for _, row in results.iterrows():
+                st.markdown("---")
+
+                st.subheader(row["name"])
+                st.progress(row["fit_score"] / 100)
+
+                st.write(f"**Fit Score:** {row['fit_score']}%")
+                st.write(f"**Опыт:** {row.get('experience', 'не указан')}")
+                st.write(f"**Компания:** {row.get('company', '')}")
+                st.write(f"[🔗 Перейти к вакансии]({row.get('url', '#')})")
+
+                matched, missing = skill_gap(user_skills, row["requirements"])
+
+                col1, col2 = st.columns(2)
+
+                with col1:
+                    st.markdown("### ✔ Совпадающие навыки")
+                    st.write(", ".join(sorted(matched)) if matched else "—")
+
+                with col2:
+                    st.markdown("### ❌ Недостающие навыки")
+                    st.write(", ".join(list(missing)[:10]) if missing else "—")
