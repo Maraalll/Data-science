@@ -2,6 +2,8 @@ import streamlit as st
 import data_science_1
 import data_science_2
 import data_science_3
+import data5 
+
 
 st.set_page_config(
     page_title="Платформа для поиска работы",
@@ -60,6 +62,7 @@ page = st.sidebar.radio(
     [
         "🔎 Поиск вакансий",
         "🌟 Оценка компании",
+        "🎯 Skill Match/Fit",
         "📝 Генератор резюме"
     ]
 )
@@ -69,5 +72,7 @@ if page == "🔎 Поиск вакансий":
     data_science_1.page_find_vacancies()
 elif page == "🌟 Оценка компании":
     data_science_2.page_rate_company()
+elif page == "🎯 Skill Match/Fit":
+    data5.page_skill_match()
 elif page == "📝 Генератор резюме":
     data_science_3.page_generate_resume()
