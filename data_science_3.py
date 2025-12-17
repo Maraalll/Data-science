@@ -14,14 +14,18 @@ from reportlab.pdfbase.ttfonts import TTFont
 import os
 from reportlab.lib.utils import simpleSplit  # Для отладки
 
-# --- 1. Настройка API ключа и выбор модели ---
-YOUR_API_KEY = "AIzaSyBJsJU6FKuJDyI-gRTFmGwgPkoT6RynsOc"  # ***** ВСТАВЬТЕ СВОЙ КЛЮЧ ЗДЕСЬ *****
+# --- 1. Настройка API ключа и выбор модели (НОВЫЙ GEMINI API v1) ---
+import google.generativeai as genai
+
+YOUR_API_KEY = "AIzaSyBJsJU6FKuJDyI-gRTFmGwgPkoT6RynsOc"
+
 try:
     genai.configure(api_key=YOUR_API_KEY)
-    model = genai.GenerativeModel('gemini-1.5-pro-latest')
 except Exception as e:
-    st.error(f"Ошибка при настройке API: {e}. Пожалуйста, проверьте ваш API ключ и подключение к интернету.")
+    st.error(f"Ошибка при настройке API: {e}")
     st.stop()
+
+MODEL_NAME = "models/gemini-1.5-pro"   # ✔ рабочая модель API v1
 
 # --- 2. Классы для хранения данных пользователя ---
 class UserData:
@@ -81,7 +85,6 @@ def generate_resume(user_data):
     ФИО: {user_data.name}
     Номер телефона: {user_data.phone}
     Адрес: {user_data.address}
-
     """
 
     if user_data.has_experience == "Да":
@@ -98,16 +101,19 @@ def generate_resume(user_data):
         prompt += f"Достижения: {user_data.achievements}\n"
 
     prompt += """
-
     Сгенерируй хорошо структурированное резюме, используя профессиональный стиль.
     """
 
     try:
-        response = model.generate_content(prompt)
+        response = genai.playground.generate(
+            model=MODEL_NAME,
+            prompt=prompt
+        )
         return response.text
     except Exception as e:
-        st.error(f"Ошибка при генерации резюме: {e}. Пожалуйста, проверьте свой запрос и API ключ.")
+        st.error(f"Ошибка при генерации резюме: {e}. Проверьте API ключ или модель.")
         return ""
+
 
 # --- 5. Функция для работы со шрифтами ---
 def setup_fonts():
