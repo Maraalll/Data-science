@@ -14,55 +14,23 @@ def load_vacancies():
         "hh_kazakhstan_final_dataset.csv.gz"
     )
     return pd.read_csv(file_path)
-    
-def match_vacancies(user_text, top_n=5, city="Все города"):
-    filtered_df = df.copy()
-
-    # --- фильтрация по городу ---
-    if city != "Все города":
-        filtered_df = filtered_df[filtered_df["city"] == city]
-
-    # --- если после фильтрации пусто ---
-    if filtered_df.empty:
-        return pd.DataFrame()
-
-    # --- векторизация ---
-    texts = filtered_df["requirements"].fillna("")
-    vectors = vectorizer.transform(texts)
-
-    user_vector = vectorizer.transform([clean_text(user_text)])
-    similarities = cosine_similarity(user_vector, vectors)[0]
-
-    # --- топ вакансий ---
-    top_idx = np.argsort(similarities)[::-1][:top_n]
-    results = filtered_df.iloc[top_idx].copy()
-
-    results["fit_score"] = (similarities[top_idx] * 100).round(1)
-
-    # 🔹 пометка режима
-    if city == "Все города":
-        results["city_mode"] = "🌍 Все города"
-    else:
-        results["city_mode"] = f"📍 {city}"
-
-    return results
-
 
 
 # ======================================================
 # ОСНОВНАЯ ЛОГИКА CityFit AI
 # ======================================================
-def cityfit_ai(user_city, profession=None):
+def cityfit_ai(profession):
     df = load_vacancies()
 
-    all_cities_mode = user_city is None
+    # --- фильтр по профессии ---
+    df = df[
+        df["name"]
+        .str.contains(profession, case=False, na=False)
+    ]
 
-    # --- фильтр по профессии (если выбрана) ---
-    if profession:
-        df = df[
-            df["name"]
-            .str.contains(profession, case=False, na=False)
-        ]
+    if df.empty:
+        st.warning("⚠️ По этой профессии вакансий не найдено")
+        return
 
     # --- статистика по городам ---
     city_stats = (
@@ -72,36 +40,25 @@ def cityfit_ai(user_city, profession=None):
     )
     city_stats.columns = ["city", "vacancies"]
 
-    if city_stats.empty:
-        st.warning("⚠️ По выбранной профессии вакансий не найдено")
-        return
-
-    # --- CityFit Score (нормализованный) ---
-    city_stats["score"] = (np.log1p(city_stats["vacancies"]) / np.log1p(city_stats["vacancies"].max()) * 100).round().astype(int)
-
+    # --- CityFit Score (лог-нормализация) ---
+    city_stats["score"] = (
+        np.log1p(city_stats["vacancies"])
+        / np.log1p(city_stats["vacancies"].max())
+        * 100
+    ).round().astype(int)
 
     city_stats = city_stats.sort_values("score", ascending=False)
 
     # ======================================================
     # ВИЗУАЛЬНЫЕ КАРТОЧКИ
     # ======================================================
-    st.markdown("### 🌍 В каком городе тебе будет проще найти работу?")
-    if all_cities_mode:
-        st.info("🌍 Анализ проводится по всем городам Казахстана")
-    else:
-        st.info(f"📍 Анализ проводится относительно города: **{user_city}**")
+    st.markdown("### 🌍 Города с вакансиями по выбранной профессии")
+    st.info(f"🔎 Профессия: **{profession}**")
 
-
-    for _, row in city_stats.head(5).iterrows():
+    for _, row in city_stats.head(7).iterrows():
         city = row["city"]
         vacancies = row["vacancies"]
         score = row["score"]
-
-        icon = "⭐"
-        label = "Recommended"
-        if not all_cities_mode and city == user_city:
-            icon = "📍"
-            label = "Your city"
 
         st.markdown(
             f"""
@@ -114,13 +71,13 @@ def cityfit_ai(user_city, profession=None):
             ">
                 <div style="display:flex; justify-content:space-between;">
                     <div style="font-size:18px;">
-                        {icon} <b>{city}</b> — {vacancies} вакансий
-                        <span style="color:#999; font-size:14px;">({label})</span>
+                        ⭐ <b>{city}</b> — {vacancies} вакансий
                     </div>
                     <div style="font-weight:700; color:#1f77b4;">
                         {score}%
                     </div>
                 </div>
+
                 <div style="
                     background:#e6ecf5;
                     border-radius:10px;
@@ -136,17 +93,14 @@ def cityfit_ai(user_city, profession=None):
                 </div>
             </div>
             """,
-            unsafe_allow_html=True   # ← ВОТ ЭТО ОБЯЗАТЕЛЬ
+            unsafe_allow_html=True
         )
 
-
     # ======================================================
-    # 📊 ГРАФИК CityFit Score
+    # 📊 ГРАФИК
     # ======================================================
     st.markdown("### 📊 CityFit Score по городам")
-
-    chart_df = city_stats.set_index("city")[["score"]]
-    st.bar_chart(chart_df)
+    st.bar_chart(city_stats.set_index("city")[["score"]])
 
     # ======================================================
     # 🔍 Explainable AI
@@ -154,79 +108,41 @@ def cityfit_ai(user_city, profession=None):
     with st.expander("🔍 Почему именно эти города? (Explainable AI)"):
         st.markdown(
             """
-            **CityFit AI** анализирует рынок вакансий и учитывает:
+            **CityFit AI** анализирует рынок вакансий по выбранной профессии:
 
-            • 📌 **Количество вакансий** — чем больше предложений, тем выше шанс  
-            • ⚖️ **Относительную силу рынка** — сравнение городов между собой  
-            • 🧠 **Профессию пользователя** — если выбрана, анализ становится персональным  
+            • 📌 учитывает количество вакансий  
+            • ⚖️ сравнивает города между собой  
+            • 🧠 показывает, где выше шанс трудоустройства  
 
-            **CityFit Score** — это нормализованный показатель (0–100),
-            который помогает быстро понять, где старт карьеры будет проще.
+            **CityFit Score** — относительный показатель (0–100),
+            а не абсолютный процент.
             """
         )
 
 
 # ======================================================
-# СТРАНИЦА CityFit AI (UI + управление)
+# СТРАНИЦА CityFit AI
 # ======================================================
 def page_cityfit_ai():
     st.markdown("## 🌍 CityFit AI")
     st.markdown(
         "<p style='color:gray;'>"
         "Интеллектуальный ML-модуль, который показывает, "
-        "<b>в каком городе твой шанс трудоустройства выше</b>, "
+        "<b>в каких городах выше шанс трудоустройства</b> "
         "на основе анализа рынка вакансий"
         "</p>",
         unsafe_allow_html=True
     )
 
-    # --- инициализация профиля ---
-    if "user_profile" not in st.session_state:
-        st.session_state.user_profile = {}
-
-    # --- выбор / смена города ---
-    if ("city" not in st.session_state.user_profile) or st.session_state.get("change_city", False):
-        st.info("📍 Выберите город")
-
-        df = load_vacancies()
-        all_cities = sorted(df["city"].dropna().unique().tolist())
-        cities = ["Все города 🌍"] + all_cities
-
-        selected_city = st.selectbox("🏙 Город:", cities)
-
-        if st.button("✅ Подтвердить город"):
-            if selected_city == "Все города 🌍":
-                st.session_state.user_profile["city"] = None
-            else:
-                st.session_state.user_profile["city"] = selected_city
-
-            st.session_state.change_city = False
-            st.rerun()
-
-        # ❗ВАЖНО: останавливаем страницу, пока не подтвердили
-        st.stop()
-
-    # --- выбранный город ---
-    user_city = st.session_state.user_profile.get("city")
-
-    if user_city is None:
-        st.success("🌍 Режим: **Все города Казахстана**")
-    else:
-        st.success(f"📍 Выбранный город: **{user_city}**")
-
-    if st.button("🔄 Изменить город"):
-        st.session_state.change_city = True
-        st.rerun()
-
-    # ======================================================
-    # 🧠 УЧЁТ ПРОФЕССИИ
-    # ======================================================
     st.markdown("### 🧠 Учитывать профессию")
 
     profession = st.text_input(
-        "Введите профессию или ключевое слово (например: Data, Analyst, Marketing)",
-        placeholder="Например: Data Analyst"
+        "Введите профессию или ключевое слово",
+        placeholder="Например: Data Analyst, Python, Marketing"
     )
 
-    # --- запуск CityFit AI ---
-    cityfit_ai(user_city, profession if profession else None)
+    if not profession:
+        st.info("✍️ Введите профессию, чтобы увидеть подходящие города")
+        return
+
+    cityfit_ai(profession)
