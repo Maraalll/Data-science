@@ -51,6 +51,24 @@ def match_vacancies(user_text, top_n=5):
     results = df.iloc[top_idx].copy()
     results["fit_score"] = (similarities[top_idx] * 100).round(1)
     return results
+def extract_skills(text):
+    """
+    Extracts individual skills from text
+    """
+    return set(clean_text(text).split())
+
+
+def skill_gap(user_text, vacancy_text):
+    """
+    Returns matched and missing skills between user and vacancy
+    """
+    user_skills = extract_skills(user_text)
+    vacancy_skills = extract_skills(vacancy_text)
+
+    matched = user_skills & vacancy_skills
+    missing = vacancy_skills - user_skills
+
+    return matched, missing
 
 
 # =========================
