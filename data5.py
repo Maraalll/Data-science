@@ -104,7 +104,7 @@ def page_skill_match():
         max_value=10,
         value=5
     )
-if st.button("🚀 Проверить соответствие"):
+    if st.button("🚀 Проверить соответствие"):
 
     if not user_skills.strip():
         st.warning("Введите навыки для анализа")
