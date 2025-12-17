@@ -121,7 +121,6 @@ def cityfit_ai(user_city, profession=None):
                         {score}%
                     </div>
                 </div>
-
                 <div style="
                     background:#e6ecf5;
                     border-radius:10px;
@@ -137,8 +136,9 @@ def cityfit_ai(user_city, profession=None):
                 </div>
             </div>
             """,
-            unsafe_allow_html=True
+            unsafe_allow_html=True   # ← ВОТ ЭТО ОБЯЗАТЕЛЬ
         )
+
 
     # ======================================================
     # 📊 ГРАФИК CityFit Score
