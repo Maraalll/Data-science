@@ -104,26 +104,38 @@ def page_skill_match():
         max_value=10,
         value=5
     )
+if st.button("🚀 Проверить соответствие"):
 
-    if st.button("🚀 Проверить соответствие"):
+    if not user_skills.strip():
+        st.warning("Введите навыки для анализа")
+    else:
+        results = match_vacancies(user_skills, top_n=top_n)
 
-        if not user_skills.strip():
-            st.warning("Введите навыки для анализа")
-        else:
-            results = match_vacancies(user_skills, top_n=top_n)
+        # ===== Visualization =====
+        st.markdown("## 📊 Топ вакансий по соответствию")
 
-            st.markdown("## ✅ Результаты")
+        viz_df = results[["name", "fit_score"]].copy()
+        viz_df = viz_df.sort_values("fit_score", ascending=True)
 
-            for _, row in results.iterrows():
-                st.markdown("---")
+        st.bar_chart(
+            viz_df.set_index("name"),
+            height=350
+        )
 
-                st.subheader(row["name"])
-                st.progress(row["fit_score"] / 100)
+        # ===== Detailed results =====
+        st.markdown("## ✅ Результаты")
 
-                st.write(f"**Fit Score:** {row['fit_score']}%")
-                st.write(f"**Опыт:** {row.get('experience', 'не указан')}")
-                st.write(f"**Компания:** {row.get('company', '')}")
-                st.write(f"[🔗 Перейти к вакансии]({row.get('url', '#')})")
+        for _, row in results.iterrows():
+            st.markdown("---")
+
+            st.subheader(row["name"])
+            st.progress(row["fit_score"] / 100)
+
+            st.write(f"**Fit Score:** {row['fit_score']}%")
+            st.write(f"**Опыт:** {row.get('experience', 'не указан')}")
+            st.write(f"**Компания:** {row.get('company', '')}")
+            st.write(f"[🔗 Перейти к вакансии]({row.get('url', '#')})")
+
 
                 matched, missing = skill_gap(user_skills, row["requirements"])
 
