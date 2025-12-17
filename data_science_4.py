@@ -61,19 +61,6 @@ def cityfit_ai(user_city):
     city_stats["chance"] = probabilities
     city_stats = city_stats.sort_values("chance", ascending=False)
 
-    # =========================
-    # UI
-    # =========================
-    st.markdown("## 🌍 CityFit AI")
-    st.markdown(
-        "<p style='color:gray;'>"
-        "Интеллектуальный ML-модуль, который показывает, "
-        "<b>в каком городе твой шанс трудоустройства выше</b>, "
-        "на основе анализа рынка вакансий"
-        "</p>",
-        unsafe_allow_html=True
-    )
-
     for _, row in city_stats.head(5).iterrows():
         city = row["city"]
         vacancies = row["vacancies"]
@@ -103,13 +90,36 @@ def cityfit_ai(user_city):
 
 
 # =========================
-# Страница (как у других модулей)
+# Страница CityFit AI
 # =========================
 def page_cityfit_ai():
-    user_city = st.session_state.get("user_profile", {}).get("city")
+    st.markdown("## 🌍 CityFit AI")
+    st.markdown(
+        "<p style='color:gray;'>"
+        "Интеллектуальный ML-модуль, который показывает, "
+        "<b>в каком городе твой шанс трудоустройства выше</b>, "
+        "на основе анализа рынка вакансий"
+        "</p>",
+        unsafe_allow_html=True
+    )
 
-    if not user_city:
-        st.warning("Сначала выберите город в онбординге")
+    if "user_profile" not in st.session_state:
+        st.session_state.user_profile = {}
+
+    if "city" not in st.session_state.user_profile:
+        st.info("📍 Пожалуйста, выберите город")
+
+        cities = ["Астана", "Алматы", "Шымкент", "Караганда", "Атырау", "Актобе"]
+
+        selected_city = st.selectbox("🏙 Выберите город:", cities)
+
+        if st.button("✅ Подтвердить город"):
+            st.session_state.user_profile["city"] = selected_city
+            st.rerun()
+
         return
+
+    user_city = st.session_state.user_profile["city"]
+    st.success(f"📍 Выбранный город: **{user_city}**")
 
     cityfit_ai(user_city)
