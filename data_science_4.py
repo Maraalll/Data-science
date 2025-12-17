@@ -77,9 +77,8 @@ def cityfit_ai(user_city, profession=None):
         return
 
     # --- CityFit Score (нормализованный) ---
-    city_stats["score"] = (
-        city_stats["vacancies"] / city_stats["vacancies"].max() * 100
-    ).round().astype(int)
+    city_stats["score"] = (np.log1p(city_stats["vacancies"]) / np.log1p(city_stats["vacancies"].max()) * 100).round().astype(int)
+
 
     city_stats = city_stats.sort_values("score", ascending=False)
 
@@ -186,39 +185,34 @@ def page_cityfit_ai():
         st.session_state.user_profile = {}
 
     # --- выбор / смена города ---
-    if "city" not in st.session_state.user_profile or st.session_state.get("change_city", False):
-
+    if ("city" not in st.session_state.user_profile) or st.session_state.get("change_city", False):
         st.info("📍 Выберите город")
+
         df = load_vacancies()
-
-        all_cities = (
-            df["city"]
-            .dropna()
-            .unique()
-            .tolist()
-        )
-        all_cities = sorted(all_cities)
+        all_cities = sorted(df["city"].dropna().unique().tolist())
         cities = ["Все города 🌍"] + all_cities
-        selected_city = st.selectbox(
-            "🏙 Город:",
-            cities
-        )
 
-
+        selected_city = st.selectbox("🏙 Город:", cities)
 
         if st.button("✅ Подтвердить город"):
             if selected_city == "Все города 🌍":
                 st.session_state.user_profile["city"] = None
             else:
                 st.session_state.user_profile["city"] = selected_city
+
             st.session_state.change_city = False
             st.rerun()
 
+        # ❗ВАЖНО: останавливаем страницу, пока не подтвердили
+        st.stop()
 
     # --- выбранный город ---
-    user_city = st.session_state.user_profile["city"]
+    user_city = st.session_state.user_profile.get("city")
 
-    st.success(f"📍 Выбранный город: **{user_city}**")
+    if user_city is None:
+        st.success("🌍 Режим: **Все города Казахстана**")
+    else:
+        st.success(f"📍 Выбранный город: **{user_city}**")
 
     if st.button("🔄 Изменить город"):
         st.session_state.change_city = True
