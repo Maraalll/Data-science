@@ -72,7 +72,8 @@ def cityfit_ai_by_profession(profession: str):
             ">
                 <div style="display:flex; justify-content:space-between;">
                     <div style="font-size:18px;">
-                        ⭐ <b>{city}</b> — {vacancies} вакансий
+                        {icon} <b>{city}</b> — {vacancies} вакансий
+                        <span style="color:#999; font-size:14px;">({label})</span>
                     </div>
                     <div style="font-weight:700; color:#1f77b4;">
                         {score}%
@@ -94,8 +95,9 @@ def cityfit_ai_by_profession(profession: str):
                 </div>
             </div>
             """,
-            unsafe_allow_html=True
+            unsafe_allow_html=True   # ← ВОТ ЭТО ОБЯЗАТЕЛЬНО
         )
+
 
     # ======================================================
     # 📊 ГРАФИК
