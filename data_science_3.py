@@ -15,7 +15,7 @@ import os
 from reportlab.lib.utils import simpleSplit  # Для отладки
 
 # --- 1. Настройка API ключа и выбор модели ---
-YOUR_API_KEY = "AIzaSyDhTRGV7c7ePDNA2G1PtvjNf-Xvmy-zy-Q"  # ***** ВСТАВЬТЕ СВОЙ КЛЮЧ ЗДЕСЬ *****
+YOUR_API_KEY = "AIzaSyBJsJU6FKuJDyI-gRTFmGwgPkoT6RynsOc"  # ***** ВСТАВЬТЕ СВОЙ КЛЮЧ ЗДЕСЬ *****
 try:
     genai.configure(api_key=YOUR_API_KEY)
     model = genai.GenerativeModel('gemini-1.5-pro-latest')
