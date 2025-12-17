@@ -17,7 +17,7 @@ def load_vacancies():
 
 
 # ======================================================
-# ОСНОВНАЯ ЛОГИКА CityFit AI (ТОЛЬКО ПО ПРОФЕССИИ)
+# ОСНОВНАЯ ЛОГИКА CityFit AI (ПО ПРОФЕССИИ)
 # ======================================================
 def cityfit_ai_by_profession(profession: str):
     df = load_vacancies()
@@ -41,7 +41,7 @@ def cityfit_ai_by_profession(profession: str):
     )
     city_stats.columns = ["city", "vacancies"]
 
-    # --- CityFit Score (лог-нормализация, чтобы не было везде 100%) ---
+    # --- CityFit Score (лог-нормализация) ---
     city_stats["score"] = (
         np.log1p(city_stats["vacancies"])
         / np.log1p(city_stats["vacancies"].max())
@@ -72,8 +72,7 @@ def cityfit_ai_by_profession(profession: str):
             ">
                 <div style="display:flex; justify-content:space-between;">
                     <div style="font-size:18px;">
-                        {icon} <b>{city}</b> — {vacancies} вакансий
-                        <span style="color:#999; font-size:14px;">({label})</span>
+                        ⭐ <b>{city}</b> — {vacancies} вакансий
                     </div>
                     <div style="font-weight:700; color:#1f77b4;">
                         {score}%
@@ -95,9 +94,8 @@ def cityfit_ai_by_profession(profession: str):
                 </div>
             </div>
             """,
-            unsafe_allow_html=True   # ← ВОТ ЭТО ОБЯЗАТЕЛЬНО
+            unsafe_allow_html=True
         )
-
 
     # ======================================================
     # 📊 ГРАФИК
@@ -129,24 +127,24 @@ def cityfit_ai_by_profession(profession: str):
 def page_cityfit_ai():
     st.markdown("## 🌍 CityFit AI")
     st.markdown(
-        "<p style='color:gray;'>"
-        "Интеллектуальный ML-модуль, который показывает, "
-        "<b>в каких городах выше шанс найти работу</b> "
-        "по выбранной профессии"
-        "</p>",
+        """
+        <p style='color:gray; font-size:16px;'>
+        Интеллектуальный ML-модуль, который показывает,
+        <b>в каких городах выше шанс найти работу</b>
+        по выбранной профессии
+        </p>
+        """,
         unsafe_allow_html=True
     )
 
-    # --- ввод профессии ---
-    st.markdown("### 🧠 Подбор по профессии")
-    st.caption("Укажи профессию или ключевое слово — анализ будет выполнен по всем городам Казахстана")
+    st.markdown("### 🔎 Анализ по профессии")
+    st.caption("Введите профессию или ключевое слово — анализ выполняется по всем городам Казахстана")
 
     profession = st.text_input(
         "Например: Data Analyst, Marketing, Python",
         placeholder="Data Analyst"
     )
 
-    # --- запуск анализа ---
     if profession:
         cityfit_ai_by_profession(profession)
     else:
