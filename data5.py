@@ -31,9 +31,13 @@ df = load_data()
 # =========================
 @st.cache_resource
 def build_vectorizer(texts):
+    RUS_STOP_WORDS = [
+    "и", "в", "на", "по", "с", "для", "из", "что", "это", "как",
+    "к", "от", "до", "мы", "вы", "они", "он", "она", "при"
+    ]
     vectorizer = TfidfVectorizer(
-        stop_words="russian",
-        max_features=5000
+    stop_words=RUS_STOP_WORDS,
+    max_features=5000
     )
     vectors = vectorizer.fit_transform(texts)
     return vectorizer, vectors
