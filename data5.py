@@ -90,8 +90,7 @@ def page_skill_match():
     st.title("🎯 Skill Match / Vacancy Fit")
 
     st.write(
-        "ML-модуль подбирает вакансии **по вашим навыкам и городу** "
-        "на основе TF-IDF и cosine similarity."
+        "ML-модуль подбирает вакансии **по вашим навыкам и городу.** "
     )
 
     st.markdown("---")
