@@ -17,9 +17,9 @@ def load_vacancies():
 
 
 # ======================================================
-# ОСНОВНАЯ ЛОГИКА CityFit AI
+# ОСНОВНАЯ ЛОГИКА CityFit AI (ТОЛЬКО ПО ПРОФЕССИИ)
 # ======================================================
-def cityfit_ai(profession):
+def cityfit_ai_by_profession(profession: str):
     df = load_vacancies()
 
     # --- фильтр по профессии ---
@@ -35,12 +35,13 @@ def cityfit_ai(profession):
     # --- статистика по городам ---
     city_stats = (
         df["city"]
+        .dropna()
         .value_counts()
         .reset_index()
     )
     city_stats.columns = ["city", "vacancies"]
 
-    # --- CityFit Score (лог-нормализация) ---
+    # --- CityFit Score (лог-нормализация, чтобы не было везде 100%) ---
     city_stats["score"] = (
         np.log1p(city_stats["vacancies"])
         / np.log1p(city_stats["vacancies"].max())
@@ -50,7 +51,7 @@ def cityfit_ai(profession):
     city_stats = city_stats.sort_values("score", ascending=False)
 
     # ======================================================
-    # ВИЗУАЛЬНЫЕ КАРТОЧКИ
+    # UI — КАРТОЧКИ
     # ======================================================
     st.markdown("### 🌍 Города с вакансиями по выбранной профессии")
     st.info(f"🔎 Профессия: **{profession}**")
@@ -105,17 +106,17 @@ def cityfit_ai(profession):
     # ======================================================
     # 🔍 Explainable AI
     # ======================================================
-    with st.expander("🔍 Почему именно эти города? (Explainable AI)"):
+    with st.expander("🔍 Почему именно эти города?"):
         st.markdown(
             """
             **CityFit AI** анализирует рынок вакансий по выбранной профессии:
 
-            • 📌 учитывает количество вакансий  
-            • ⚖️ сравнивает города между собой  
-            • 🧠 показывает, где выше шанс трудоустройства  
+            • 📌 количество вакансий в городе  
+            • ⚖️ относительную силу рынка труда  
+            • 🧠 сравнение городов между собой  
 
-            **CityFit Score** — относительный показатель (0–100),
-            а не абсолютный процент.
+            **CityFit Score** — это относительный показатель (0–100),
+            а не реальный процент трудоустройства.
             """
         )
 
@@ -128,21 +129,23 @@ def page_cityfit_ai():
     st.markdown(
         "<p style='color:gray;'>"
         "Интеллектуальный ML-модуль, который показывает, "
-        "<b>в каких городах выше шанс трудоустройства</b> "
-        "на основе анализа рынка вакансий"
+        "<b>в каких городах выше шанс найти работу</b> "
+        "по выбранной профессии"
         "</p>",
         unsafe_allow_html=True
     )
 
-    st.markdown("### 🧠 Учитывать профессию")
+    # --- ввод профессии ---
+    st.markdown("### 🧠 Подбор по профессии")
+    st.caption("Укажи профессию или ключевое слово — анализ будет выполнен по всем городам Казахстана")
 
     profession = st.text_input(
-        "Введите профессию или ключевое слово",
-        placeholder="Например: Data Analyst, Python, Marketing"
+        "Например: Data Analyst, Marketing, Python",
+        placeholder="Data Analyst"
     )
 
-    if not profession:
-        st.info("✍️ Введите профессию, чтобы увидеть подходящие города")
-        return
-
-    cityfit_ai(profession)
+    # --- запуск анализа ---
+    if profession:
+        cityfit_ai_by_profession(profession)
+    else:
+        st.info("✍️ Введите профессию, чтобы увидеть анализ по городам")
