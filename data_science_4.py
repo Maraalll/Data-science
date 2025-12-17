@@ -17,16 +17,13 @@ def load_vacancies():
 
 
 # ======================================================
-# ОСНОВНАЯ ЛОГИКА CityFit AI (ПО ПРОФЕССИИ)
+# CityFit AI — анализ ТОЛЬКО по профессии
 # ======================================================
 def cityfit_ai_by_profession(profession: str):
     df = load_vacancies()
 
     # --- фильтр по профессии ---
-    df = df[
-        df["name"]
-        .str.contains(profession, case=False, na=False)
-    ]
+    df = df[df["name"].str.contains(profession, case=False, na=False)]
 
     if df.empty:
         st.warning("⚠️ По этой профессии вакансий не найдено")
@@ -51,51 +48,37 @@ def cityfit_ai_by_profession(profession: str):
     city_stats = city_stats.sort_values("score", ascending=False)
 
     # ======================================================
-    # UI — КАРТОЧКИ
+    # UI — РЕЗУЛЬТАТЫ
     # ======================================================
     st.markdown("### 🌍 Города с вакансиями по выбранной профессии")
     st.info(f"🔎 Профессия: **{profession}**")
 
     for _, row in city_stats.head(7).iterrows():
         city = row["city"]
-        vacancies = row["vacancies"]
-        score = row["score"]
+        vacancies = int(row["vacancies"])
+        score = int(row["score"])
 
+        # --- карточка ---
         st.markdown(
             f"""
             <div style="
-                background:linear-gradient(135deg,#f8fbff,#eef4ff);
-                padding:18px;
-                border-radius:16px;
-                margin-bottom:14px;
-                box-shadow:0 6px 16px rgba(0,0,0,0.04);
+                background:#f8fbff;
+                padding:16px;
+                border-radius:14px;
+                margin-bottom:10px;
+                border:1px solid #e6ecf5;
             ">
-                <div style="display:flex; justify-content:space-between;">
-                    <div style="font-size:18px;">
-                        ⭐ <b>{city}</b> — {vacancies} вакансий
-                    </div>
-                    <div style="font-weight:700; color:#1f77b4;">
-                        {score}%
-                    </div>
-                </div>
-
-                <div style="
-                    background:#e6ecf5;
-                    border-radius:10px;
-                    height:10px;
-                    margin-top:10px;
-                ">
-                    <div style="
-                        width:{score}%;
-                        background:linear-gradient(90deg,#4facfe,#00f2fe);
-                        height:10px;
-                        border-radius:10px;
-                    "></div>
-                </div>
+                ⭐ <b>{city}</b> — {vacancies} вакансий  
+                <span style="float:right; font-weight:600; color:#1f77b4;">
+                    {score}%
+                </span>
             </div>
             """,
             unsafe_allow_html=True
         )
+
+        # --- стабильный прогресс-бар ---
+        st.progress(score / 100)
 
     # ======================================================
     # 📊 ГРАФИК
@@ -115,7 +98,7 @@ def cityfit_ai_by_profession(profession: str):
             • ⚖️ относительную силу рынка труда  
             • 🧠 сравнение городов между собой  
 
-            **CityFit Score** — это относительный показатель (0–100),
+            **CityFit Score** — относительный показатель (0–100),
             а не реальный процент трудоустройства.
             """
         )
@@ -128,7 +111,7 @@ def page_cityfit_ai():
     st.markdown("## 🌍 CityFit AI")
     st.markdown(
         """
-        <p style='color:gray; font-size:16px;'>
+        <p style="color:gray; font-size:16px;">
         Интеллектуальный ML-модуль, который показывает,
         <b>в каких городах выше шанс найти работу</b>
         по выбранной профессии
@@ -138,7 +121,9 @@ def page_cityfit_ai():
     )
 
     st.markdown("### 🔎 Анализ по профессии")
-    st.caption("Введите профессию или ключевое слово — анализ выполняется по всем городам Казахстана")
+    st.caption(
+        "Введите профессию или ключевое слово — анализ выполняется по всем городам Казахстана"
+    )
 
     profession = st.text_input(
         "Например: Data Analyst, Marketing, Python",
