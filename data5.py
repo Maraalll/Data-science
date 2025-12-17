@@ -81,4 +81,25 @@ def page_skill_match():
                 st.markdown("---")
                 st.subheader(row["name"])
                 st.progress(row["fit_score"] / 100)
+                
                 st.write(f"**Fit Score:** {row['fit_score']}%")
+                st.write(f"**Опыт:** {row.get('experience', 'не указан')}")
+                st.write(f"**Компания:** {row.get('company', '')}")
+                st.write(f"[🔗 Перейти к вакансии]({row.get('url', '#')})")
+                # 🔍 анализ навыков
+                matched, missing = skill_gap(user_skills, row["requirements"])
+
+                col1, col2 = st.columns(2)
+
+                with col1:
+                    st.markdown("### ✔ Совпадающие навыки")
+                    if matched:
+                        st.write(", ".join(sorted(matched)))
+                    else:
+                        st.write("—")
+                with col2:
+                    st.markdown("### ❌ Недостающие навыки")
+                    if missing:
+                        st.write(", ".join(list(missing)[:10]))
+                    else:
+                        st.write("—")
