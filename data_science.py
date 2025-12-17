@@ -2,6 +2,7 @@ import streamlit as st
 import data_science_1
 import data_science_2
 import data_science_3
+import data_science_4
 import data5 
 
 
@@ -91,7 +92,7 @@ elif page == "🌍 CityFit AI":
     )
 
     # вызов ML-функции
-    data5.cityfit_ai(
+    data_science_4.cityfit_ai(
         st.session_state.get("user_profile", {}).get("city")
     )
 
