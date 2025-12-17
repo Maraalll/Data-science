@@ -141,3 +141,12 @@ if st.button("🚀 Проверить соответствие"):
                     st.write(", ".join(list(missing)[:10]))
                 else:
                     st.write("—")
+def page_skill_match():
+    import streamlit as st
+
+    st.title("🎯 Skill Match / Fit")
+    st.write("Умный подбор вакансий по навыкам")
+
+    # временно — просто проверка
+    st.success("Страница Skill Match работает ✅")
+
