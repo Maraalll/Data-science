@@ -2,12 +2,11 @@ import streamlit as st
 import pandas as pd
 import os
 import numpy as np
-from sklearn.linear_model import LogisticRegression
 
 
-# =========================
+# ======================================================
 # Загрузка данных
-# =========================
+# ======================================================
 @st.cache_data
 def load_vacancies():
     file_path = os.path.join(
@@ -15,33 +14,57 @@ def load_vacancies():
         "hh_kazakhstan_final_dataset.csv.gz"
     )
     return pd.read_csv(file_path)
+    
+def match_vacancies(user_text, top_n=5, city="Все города"):
+    filtered_df = df.copy()
+
+    # --- фильтрация по городу ---
+    if city != "Все города":
+        filtered_df = filtered_df[filtered_df["city"] == city]
+
+    # --- если после фильтрации пусто ---
+    if filtered_df.empty:
+        return pd.DataFrame()
+
+    # --- векторизация ---
+    texts = filtered_df["requirements"].fillna("")
+    vectors = vectorizer.transform(texts)
+
+    user_vector = vectorizer.transform([clean_text(user_text)])
+    similarities = cosine_similarity(user_vector, vectors)[0]
+
+    # --- топ вакансий ---
+    top_idx = np.argsort(similarities)[::-1][:top_n]
+    results = filtered_df.iloc[top_idx].copy()
+
+    results["fit_score"] = (similarities[top_idx] * 100).round(1)
+
+    # 🔹 пометка режима
+    if city == "Все города":
+        results["city_mode"] = "🌍 Все города"
+    else:
+        results["city_mode"] = f"📍 {city}"
+
+    return results
 
 
-# =========================
-# Обучение ML-модели
-# =========================
-@st.cache_resource
-def train_cityfit_model(city_stats):
-    X = []
-    y = []
 
-    median_vacancies = city_stats["vacancies"].median()
-
-    for _, row in city_stats.iterrows():
-        X.append([row["vacancies"]])
-        y.append(1 if row["vacancies"] >= median_vacancies else 0)
-
-    model = LogisticRegression()
-    model.fit(X, y)
-    return model
-
-
-# =========================
-# Основная ML-логика
-# =========================
-def cityfit_ai(user_city):
+# ======================================================
+# ОСНОВНАЯ ЛОГИКА CityFit AI
+# ======================================================
+def cityfit_ai(user_city, profession=None):
     df = load_vacancies()
 
+    all_cities_mode = user_city is None
+
+    # --- фильтр по профессии (если выбрана) ---
+    if profession:
+        df = df[
+            df["name"]
+            .str.contains(profession, case=False, na=False)
+        ]
+
+    # --- статистика по городам ---
     city_stats = (
         df["city"]
         .value_counts()
@@ -49,49 +72,104 @@ def cityfit_ai(user_city):
     )
     city_stats.columns = ["city", "vacancies"]
 
-    model = train_cityfit_model(city_stats)
+    if city_stats.empty:
+        st.warning("⚠️ По выбранной профессии вакансий не найдено")
+        return
 
-    probabilities = []
-    for _, row in city_stats.iterrows():
-        prob = model.predict_proba(
-            np.array([[row["vacancies"]]])
-        )[0][1]
-        probabilities.append(prob)
+    # --- CityFit Score (нормализованный) ---
+    city_stats["score"] = (
+        city_stats["vacancies"] / city_stats["vacancies"].max() * 100
+    ).round().astype(int)
 
-    city_stats["chance"] = probabilities
-    city_stats = city_stats.sort_values("chance", ascending=False)
+    city_stats = city_stats.sort_values("score", ascending=False)
+
+    # ======================================================
+    # ВИЗУАЛЬНЫЕ КАРТОЧКИ
+    # ======================================================
+    st.markdown("### 🌍 В каком городе тебе будет проще найти работу?")
+    if all_cities_mode:
+        st.info("🌍 Анализ проводится по всем городам Казахстана")
+    else:
+        st.info(f"📍 Анализ проводится относительно города: **{user_city}**")
+
 
     for _, row in city_stats.head(5).iterrows():
         city = row["city"]
         vacancies = row["vacancies"]
-        chance = int(row["chance"] * 100)
+        score = row["score"]
 
         icon = "⭐"
-        if city == user_city:
+        label = "Recommended"
+        if not all_cities_mode and city == user_city:
             icon = "📍"
+            label = "Your city"
 
         st.markdown(
             f"""
             <div style="
-                background:#f4f8fb;
-                padding:16px;
-                border-radius:14px;
-                margin-bottom:10px;
-                font-size:18px;
+                background:linear-gradient(135deg,#f8fbff,#eef4ff);
+                padding:18px;
+                border-radius:16px;
+                margin-bottom:14px;
+                box-shadow:0 6px 16px rgba(0,0,0,0.04);
             ">
-                {icon} <b>{city}</b> — {vacancies} вакансий  
-                <span style="float:right; color:#1f77b4; font-weight:bold;">
-                    {chance}% шанс
-                </span>
+                <div style="display:flex; justify-content:space-between;">
+                    <div style="font-size:18px;">
+                        {icon} <b>{city}</b> — {vacancies} вакансий
+                        <span style="color:#999; font-size:14px;">({label})</span>
+                    </div>
+                    <div style="font-weight:700; color:#1f77b4;">
+                        {score}%
+                    </div>
+                </div>
+
+                <div style="
+                    background:#e6ecf5;
+                    border-radius:10px;
+                    height:10px;
+                    margin-top:10px;
+                ">
+                    <div style="
+                        width:{score}%;
+                        background:linear-gradient(90deg,#4facfe,#00f2fe);
+                        height:10px;
+                        border-radius:10px;
+                    "></div>
+                </div>
             </div>
             """,
             unsafe_allow_html=True
         )
 
+    # ======================================================
+    # 📊 ГРАФИК CityFit Score
+    # ======================================================
+    st.markdown("### 📊 CityFit Score по городам")
 
-# =========================
-# Страница CityFit AI
-# =========================
+    chart_df = city_stats.set_index("city")[["score"]]
+    st.bar_chart(chart_df)
+
+    # ======================================================
+    # 🔍 Explainable AI
+    # ======================================================
+    with st.expander("🔍 Почему именно эти города? (Explainable AI)"):
+        st.markdown(
+            """
+            **CityFit AI** анализирует рынок вакансий и учитывает:
+
+            • 📌 **Количество вакансий** — чем больше предложений, тем выше шанс  
+            • ⚖️ **Относительную силу рынка** — сравнение городов между собой  
+            • 🧠 **Профессию пользователя** — если выбрана, анализ становится персональным  
+
+            **CityFit Score** — это нормализованный показатель (0–100),
+            который помогает быстро понять, где старт карьеры будет проще.
+            """
+        )
+
+
+# ======================================================
+# СТРАНИЦА CityFit AI (UI + управление)
+# ======================================================
 def page_cityfit_ai():
     st.markdown("## 🌍 CityFit AI")
     st.markdown(
@@ -103,23 +181,58 @@ def page_cityfit_ai():
         unsafe_allow_html=True
     )
 
+    # --- инициализация профиля ---
     if "user_profile" not in st.session_state:
         st.session_state.user_profile = {}
 
-    if "city" not in st.session_state.user_profile:
-        st.info("📍 Пожалуйста, выберите город")
+    # --- выбор / смена города ---
+    if "city" not in st.session_state.user_profile or st.session_state.get("change_city", False):
 
-        cities = ["Астана", "Алматы", "Шымкент", "Караганда", "Атырау", "Актобе"]
+        st.info("📍 Выберите город")
+        df = load_vacancies()
 
-        selected_city = st.selectbox("🏙 Выберите город:", cities)
+        all_cities = (
+            df["city"]
+            .dropna()
+            .unique()
+            .tolist()
+        )
+        all_cities = sorted(all_cities)
+        cities = ["Все города 🌍"] + all_cities
+        selected_city = st.selectbox(
+            "🏙 Город:",
+            cities
+        )
+
+
 
         if st.button("✅ Подтвердить город"):
-            st.session_state.user_profile["city"] = selected_city
+            if selected_city == "Все города 🌍":
+                st.session_state.user_profile["city"] = None
+            else:
+                st.session_state.user_profile["city"] = selected_city
+            st.session_state.change_city = False
             st.rerun()
 
-        return
 
+    # --- выбранный город ---
     user_city = st.session_state.user_profile["city"]
+
     st.success(f"📍 Выбранный город: **{user_city}**")
 
-    cityfit_ai(user_city)
+    if st.button("🔄 Изменить город"):
+        st.session_state.change_city = True
+        st.rerun()
+
+    # ======================================================
+    # 🧠 УЧЁТ ПРОФЕССИИ
+    # ======================================================
+    st.markdown("### 🧠 Учитывать профессию")
+
+    profession = st.text_input(
+        "Введите профессию или ключевое слово (например: Data, Analyst, Marketing)",
+        placeholder="Например: Data Analyst"
+    )
+
+    # --- запуск CityFit AI ---
+    cityfit_ai(user_city, profession if profession else None)
