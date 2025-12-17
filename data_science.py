@@ -1,63 +1,33 @@
-import streamlit as st
-import data_science_1
-import data_science_2
-import data_science_3
-
-st.set_page_config(
-    page_title="Платформа для поиска работы",
-    page_icon="💼",
-    layout="wide"
-)
-
 if "entered" not in st.session_state:
     st.session_state.entered = False
+
+if "onboarding_done" not in st.session_state:
+    st.session_state.onboarding_done = False
+
+if "user_profile" not in st.session_state:
+    st.session_state.user_profile = {}
 st.markdown(
     """
     <style>
-    @keyframes fadeIn {
-        from {opacity: 0; transform: translateY(20px);}
-        to {opacity: 1; transform: translateY(0);}
+    .stApp {
+        background: linear-gradient(180deg, #f4f8fb 0%, #ffffff 60%);
     }
 
-    .welcome {
-        animation: fadeIn 1.2s ease-in-out;
-        text-align: center;
-        padding: 90px 0;
-    }
-
-    .card {
-        background-color: #f8f9fa;
-        border-radius: 20px;
-        padding: 30px;
-        text-align: center;
-        box-shadow: 0px 8px 20px rgba(0,0,0,0.06);
-        animation: fadeIn 1.5s ease-in-out;
-    }
-
-    .start-btn button {
-        background-color: #1f77b4 !important;
-        color: white !important;
-        font-size: 20px !important;
-        padding: 14px 40px !important;
-        border-radius: 16px !important;
-        font-weight: bold;
+    section[data-testid="stSidebar"] {
+        background-color: #f0f4f8;
     }
     </style>
     """,
     unsafe_allow_html=True
 )
-if not st.session_state.entered:
+if st.session_state.entered and not st.session_state.onboarding_done:
 
     st.markdown(
         """
-        <div class="welcome">
-            <h1 style="font-size:52px;">👋 Добро пожаловать</h1>
-            <p style="font-size:22px; margin-top:20px;">
-                Умная платформа для студентов и выпускников  
-                по поиску работы с использованием <b>Data Science & ML</b>
-            </p>
-            <p style="color:gray; font-size:17px;">
-                Начни карьеру уверенно и осознанно
+        <div style="text-align:center; padding: 50px 0;">
+            <h2>🎯 Давайте начнём</h2>
+            <p style="font-size:18px; color:gray;">
+                Ответьте на несколько вопросов — мы подстроим платформу под вас
             </p>
         </div>
         """,
@@ -67,50 +37,48 @@ if not st.session_state.entered:
     col1, col2, col3 = st.columns(3)
 
     with col1:
-        st.markdown(
-            """
-            <div class="card">
-                <h3>🔎 Поиск вакансий</h3>
-                <p>Подбор вакансий под твою специальность и город</p>
-            </div>
-            """,
-            unsafe_allow_html=True
+        role = st.selectbox(
+            "🎓 Кто вы?",
+            ["Студент", "Выпускник", "Молодой специалист"]
         )
 
     with col2:
-        st.markdown(
-            """
-            <div class="card">
-                <h3>🌟 Оценка компаний</h3>
-                <p>Анализ репутации и надежности работодателей</p>
-            </div>
-            """,
-            unsafe_allow_html=True
+        goal = st.selectbox(
+            "🎯 Ваша цель",
+            ["Стажировка", "Первая работа", "Фриланс"]
         )
 
     with col3:
-        st.markdown(
-            """
-            <div class="card">
-                <h3>📝 Генератор резюме</h3>
-                <p>Создание профессионального резюме с ИИ</p>
-            </div>
-            """,
-            unsafe_allow_html=True
+        city = st.selectbox(
+            "🏙 Город",
+            ["Астана", "Алматы", "Шымкент", "Караганда"]
         )
 
-    st.markdown("<br><br>", unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
 
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        st.markdown('<div class="start-btn">', unsafe_allow_html=True)
-        if st.button("🚀 Начать", use_container_width=True):
-            st.session_state.entered = True
+        if st.button("✨ Перейти к платформе", use_container_width=True):
+            st.session_state.user_profile = {
+                "role": role,
+                "goal": goal,
+                "city": city
+            }
+            st.session_state.onboarding_done = True
             st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
 
     st.stop()
 st.sidebar.title("📌 Навигация")
+
+st.sidebar.markdown(
+    f"""
+    👤 **Профиль:**  
+    {st.session_state.user_profile.get('role')}  
+    🎯 {st.session_state.user_profile.get('goal')}  
+    🏙 {st.session_state.user_profile.get('city')}
+    """
+)
+
 page = st.sidebar.radio(
     "📄 Выберите страницу:",
     [
