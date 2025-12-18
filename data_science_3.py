@@ -10,10 +10,6 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 import os
 
-
-# -----------------------------
-# 1. API НАСТРОЙКА
-# -----------------------------
 API_KEY = "AIzaSyAQOlttcsIrSV99chFUb2g8RIV6zMxXAi4"
 
 genai.configure(api_key=API_KEY)
@@ -22,9 +18,6 @@ MODEL_NAME = "models/gemini-2.5-flash"
 model = genai.GenerativeModel(MODEL_NAME)
 
 
-# -----------------------------
-# 2. КЛАССЫ ДАННЫХ
-# -----------------------------
 class Experience:
     def __init__(self, year="", company="", position="", description=""):
         self.year = year
@@ -45,26 +38,20 @@ class UserData:
         self.achievements = ""
 
 
-# -----------------------------
-# 3. ЧИСТКА MARKDOWN (убираем чёрные квадраты)
-# -----------------------------
 def clean_markdown_links(text):
     # Убираем [текст](ссылка)
     text = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", text)
 
-    # Убираем mailto: и tel:
     text = text.replace("mailto:", "")
     text = text.replace("tel:", "")
 
-    # Убираем знаки ###, **, ---, *
+
     text = re.sub(r"[*#`_]+", "", text)
 
     return text
 
 
-# -----------------------------
-# 4. СБОР ДАННЫХ ОТ ПОЛЬЗОВАТЕЛЯ
-# -----------------------------
+
 def collect_user_data():
     user = UserData()
 
@@ -97,10 +84,6 @@ def collect_user_data():
 
     return user
 
-
-# -----------------------------
-# 5. ГЕНЕРАЦИЯ ТЕКСТА РЕЗЮМЕ
-# -----------------------------
 def generate_resume(user):
     prompt = f"""
 Создай профессиональное резюме:
@@ -135,10 +118,6 @@ def generate_resume(user):
         st.error(f"Ошибка: {e}")
         return ""
 
-
-# -----------------------------
-# 6. PDF ГЕНЕРАЦИЯ
-# -----------------------------
 def setup_fonts():
     font_path = os.path.join(os.path.dirname(__file__), "DejaVuSans.ttf")
     if os.path.exists(font_path):
@@ -169,9 +148,6 @@ def create_pdf(text):
     return buffer.getvalue()
 
 
-# -----------------------------
-# 7. UI Streamlit
-# -----------------------------
 def page_generate_resume():
     user = collect_user_data()
 
@@ -191,8 +167,5 @@ def page_generate_resume():
                                file_name="resume.pdf", mime="application/pdf")
 
 
-# -----------------------------
-# 8. Запуск
-# -----------------------------
 if __name__ == "__main__":
     page_generate_resume()
