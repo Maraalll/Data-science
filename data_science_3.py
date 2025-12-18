@@ -1,6 +1,7 @@
 import streamlit as st
 import google.generativeai as genai
 import io
+import re
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import Paragraph, Frame, BaseDocTemplate, PageTemplate
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -9,6 +10,7 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 import os
 
+
 # -----------------------------
 # 1. API НАСТРОЙКА
 # -----------------------------
@@ -16,10 +18,9 @@ API_KEY = "AIzaSyAQOlttcsIrSV99chFUb2g8RIV6zMxXAi4"
 
 genai.configure(api_key=API_KEY)
 
-# 🟢 Рабочая актуальная модель
 MODEL_NAME = "models/gemini-2.5-flash"
-
 model = genai.GenerativeModel(MODEL_NAME)
+
 
 # -----------------------------
 # 2. КЛАССЫ ДАННЫХ
@@ -30,6 +31,7 @@ class Experience:
         self.company = company
         self.position = position
         self.description = description
+
 
 class UserData:
     def __init__(self):
@@ -42,8 +44,26 @@ class UserData:
         self.experiences = []
         self.achievements = ""
 
+
 # -----------------------------
-# 3. СБОР ДАННЫХ
+# 3. ЧИСТКА MARKDOWN (убираем чёрные квадраты)
+# -----------------------------
+def clean_markdown_links(text):
+    # Убираем [текст](ссылка)
+    text = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", text)
+
+    # Убираем mailto: и tel:
+    text = text.replace("mailto:", "")
+    text = text.replace("tel:", "")
+
+    # Убираем знаки ###, **, ---, *
+    text = re.sub(r"[*#`_]+", "", text)
+
+    return text
+
+
+# -----------------------------
+# 4. СБОР ДАННЫХ ОТ ПОЛЬЗОВАТЕЛЯ
 # -----------------------------
 def collect_user_data():
     user = UserData()
@@ -77,8 +97,9 @@ def collect_user_data():
 
     return user
 
+
 # -----------------------------
-# 4. ГЕНЕРАЦИЯ РЕЗЮМЕ
+# 5. ГЕНЕРАЦИЯ ТЕКСТА РЕЗЮМЕ
 # -----------------------------
 def generate_resume(user):
     prompt = f"""
@@ -105,7 +126,7 @@ def generate_resume(user):
     else:
         prompt += f"\nДостижения:\n{user.achievements}\n"
 
-    prompt += "\nОформи текст структурировано, красиво и профессионально."
+    prompt += "\nОформи текст структурировано, без markdown, без ссылок."
 
     try:
         response = model.generate_content(prompt)
@@ -114,8 +135,9 @@ def generate_resume(user):
         st.error(f"Ошибка: {e}")
         return ""
 
+
 # -----------------------------
-# 5. PDF ГЕНЕРАЦИЯ
+# 6. PDF ГЕНЕРАЦИЯ
 # -----------------------------
 def setup_fonts():
     font_path = os.path.join(os.path.dirname(__file__), "DejaVuSans.ttf")
@@ -124,44 +146,53 @@ def setup_fonts():
         return "DejaVu"
     return "Helvetica"
 
+
 def create_pdf(text):
     buffer = io.BytesIO()
     doc = BaseDocTemplate(buffer, pagesize=letter)
     styles = getSampleStyleSheet()
     font = setup_fonts()
 
-    style = ParagraphStyle("Normal", parent=styles["Normal"], fontName=font, fontSize=12)
+    style = ParagraphStyle("Normal", parent=styles["Normal"], fontName=font, fontSize=12, leading=14)
 
-    story = [Paragraph("Резюме", ParagraphStyle("Title", alignment=TA_CENTER, fontSize=18))]
+    story = [Paragraph("Резюме", ParagraphStyle("Title", alignment=TA_CENTER, fontSize=18, fontName=font))]
 
     for line in text.split("\n"):
         if line.strip():
             story.append(Paragraph(line.strip(), style))
 
-    doc.addPageTemplates([PageTemplate(id="main", frames=[Frame(doc.leftMargin, doc.bottomMargin, doc.width, doc.height)])])
-    doc.build(story)
+    doc.addPageTemplates([PageTemplate(id="main",
+                        frames=[Frame(doc.leftMargin, doc.bottomMargin, doc.width, doc.height)])])
 
+    doc.build(story)
     buffer.seek(0)
     return buffer.getvalue()
 
+
 # -----------------------------
-# 6. UI Streamlit
+# 7. UI Streamlit
 # -----------------------------
 def page_generate_resume():
     user = collect_user_data()
 
     if st.button("✨ Сгенерировать резюме"):
         if not user.name or not user.phone or not user.address:
-            st.warning("Заполните обязательные поля!")
+            st.warning("Заполните ФИО, телефон и адрес!")
         else:
-            st.session_state.resume = generate_resume(user)
+            raw = generate_resume(user)
+            st.session_state.resume = clean_markdown_links(raw)
 
     if "resume" in st.session_state:
         st.text_area("Предпросмотр:", st.session_state.resume, height=400)
 
         if st.button("📥 Скачать PDF"):
             pdf = create_pdf(st.session_state.resume)
-            st.download_button("Скачать PDF", pdf, file_name="resume.pdf", mime="application/pdf")
+            st.download_button("Скачать PDF", pdf,
+                               file_name="resume.pdf", mime="application/pdf")
 
-page_generate_resume()
 
+# -----------------------------
+# 8. Запуск
+# -----------------------------
+if __name__ == "__main__":
+    page_generate_resume()
