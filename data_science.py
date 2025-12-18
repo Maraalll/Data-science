@@ -153,6 +153,10 @@ if st.session_state.show_home:
 
           <div class="heroSub">
               Умный поиск работы для студентов<br/>
+              <small>
+                Анализ вакансий, городов и навыков с использованием
+                <b>Data Science & Machine Learning</b>
+              </small>
           </div>
 
           <div class="cards">
@@ -177,30 +181,18 @@ if st.session_state.show_home:
     components.html(home_html, height=780)
 
     # ✅ КНОПКА ПО ЦЕНТРУ
-    
-    st.markdown("""
-    <div style="
-        margin-top:-120px;
-        display:flex;
-        justify-content:center;
-    ">
-    """, unsafe_allow_html=True)
-   
-   
-    start_clicked = st.button(
-        "🚀 Начать с JobBuddy",
-        key="start_jobbuddy"
-    )
+    st.markdown("<div style='text-align:center; margin-top:-120px;'>", unsafe_allow_html=True)
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        if st.button("🚀 Начать с JobBuddy", use_container_width=True):
+            st.session_state.show_home = False
+            st.rerun()
     st.markdown("</div>", unsafe_allow_html=True)
-    if start_clicked:
-        st.session_state.show_home = False
-        st.rerun()
-        
 
     st.stop()
 
 
-# =========================
+   
 # SIDEBAR + NAVIGATION
 # =========================
 st.sidebar.title("📌 Навигация")
