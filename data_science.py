@@ -1,105 +1,149 @@
 import streamlit as st
+import streamlit.components.v1 as components
+
 import data_science_1
 import data_science_2
 import data_science_3
 import data_science_4
 import data5
 
+
+# =========================
+# CONFIG (ДОЛЖЕН БЫТЬ ПЕРВЫМ)
+# =========================
 st.set_page_config(
     page_title="JobBuddy",
     page_icon="🎯",
     layout="wide"
 )
 
-# ===== СОСТОЯНИЕ =====
+# =========================
+# STATE
+# =========================
 if "show_home" not in st.session_state:
     st.session_state.show_home = True
 
-# ===== СТИЛИ =====
+
+# =========================
+# GLOBAL CSS (фон и кнопки)
+# =========================
 st.markdown("""
 <style>
+/* фон для всего приложения */
 .stApp {
     background: radial-gradient(circle at top right, #cfe8ff 0%, #f8fbff 35%, #eaf1ff 100%);
 }
 
+/* чуть меньше верхний отступ */
 .main {
     padding-top: 0rem;
 }
 
-.hero {
-    text-align: center;
-    padding: 110px 20px 80px 20px;
-}
-
-.hero-title {
-    font-size: 48px;
-    font-weight: 800;
-    color: #1f2a44;
-}
-
-.hero-subtitle {
-    font-size: 18px;
-    color: #4a5b7c;
-    margin-top: 12px;
-}
-
-.card {
-    background: white;
-    border-radius: 22px;
-    padding: 24px;
-    box-shadow: 0 12px 30px rgba(0,0,0,0.06);
-}
-
+/* кнопки streamlit */
 .stButton > button {
-    background: linear-gradient(90deg, #4facfe, #00f2fe);
-    color: white;
-    border-radius: 18px;
-    padding: 14px 42px;
-    font-size: 18px;
-    border: none;
+    background: linear-gradient(90deg, #4facfe, #00f2fe) !important;
+    color: white !important;
+    border-radius: 18px !important;
+    padding: 14px 42px !important;
+    font-size: 18px !important;
+    border: none !important;
+    font-weight: 700 !important;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# ===== ГЛАВНАЯ =====
+
+# =========================
+# HOME PAGE
+# =========================
 if st.session_state.show_home:
 
-    st.markdown("""
+    # ВАЖНО: весь Hero + Cards рендерим через components.html()
+    home_html = """
+    <style>
+      .hero {
+        text-align:center;
+        padding: 90px 20px 50px 20px;
+        max-width: 1100px;
+        margin: 0 auto;
+      }
+      .heroIcon { font-size:60px; margin-bottom:10px; }
+      .heroTitle {
+        font-size:48px;
+        font-weight:800;
+        color:#1f2a44;
+        margin: 0;
+      }
+      .heroSub {
+        font-size:18px;
+        color:#4a5b7c;
+        margin-top:12px;
+        line-height:1.5;
+      }
+      .heroSub small{
+        font-size:16px;
+      }
+
+      .cards {
+        display:flex;
+        gap:24px;
+        justify-content:center;
+        max-width:1100px;
+        margin: 20px auto 0 auto;
+        flex-wrap: wrap;
+      }
+      .card {
+        background:white;
+        border-radius:22px;
+        padding:24px;
+        box-shadow:0 12px 30px rgba(0,0,0,0.06);
+        width: 320px;
+        min-height: 120px;
+        text-align:left;
+      }
+      .card h4{
+        margin:0 0 8px 0;
+        font-size:20px;
+        color:#1f2a44;
+      }
+      .card p{
+        margin:0;
+        color:#4a5b7c;
+        font-size:15px;
+      }
+    </style>
+
     <div class="hero">
-        <div style="font-size:60px; margin-bottom:10px;">🎯</div>
-
-        <div class="hero-title">
-            JobBuddy
-        </div>
-
-        <div class="hero-subtitle">
-            Умный поиск работы для студентов<br>
-            <span style="font-size:16px;">
-                Анализ вакансий, городов и навыков с использованием
-                <b>Data Science & Machine Learning</b>
-            </span>
+        <div class="heroIcon">🎯</div>
+        <h1 class="heroTitle">JobBuddy</h1>
+        <div class="heroSub">
+            Умный поиск работы для студентов<br/>
+            <small>
+              Анализ вакансий, городов и навыков с использованием
+              <b>Data Science & Machine Learning</b>
+            </small>
         </div>
     </div>
 
-    <div style="display:flex; gap:24px; justify-content:center; max-width:1000px; margin:auto;">
-        <div class="card" style="flex:1;">
+    <div class="cards">
+        <div class="card">
             <h4>🎯 Точные вакансии</h4>
             <p>Подбор вакансий под навыки и профессию</p>
         </div>
-
-        <div class="card" style="flex:1;">
+        <div class="card">
             <h4>🌍 CityFit AI</h4>
             <p>Где проще найти работу</p>
         </div>
-
-        <div class="card" style="flex:1;">
+        <div class="card">
             <h4>🤖 ML-анализ</h4>
             <p>Решения на основе данных</p>
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """
 
-    st.markdown("<div style='text-align:center; margin-top:40px;'>", unsafe_allow_html=True)
+    components.html(home_html, height=420)
+
+    st.markdown("<div style='text-align:center; margin-top:20px;'>", unsafe_allow_html=True)
     if st.button("🚀 Начать с JobBuddy"):
         st.session_state.show_home = False
         st.rerun()
@@ -107,7 +151,10 @@ if st.session_state.show_home:
 
     st.stop()
 
-# ===== SIDEBAR =====
+
+# =========================
+# SIDEBAR + NAVIGATION
+# =========================
 st.sidebar.title("📌 Навигация")
 page = st.sidebar.radio(
     "Выберите страницу:",
