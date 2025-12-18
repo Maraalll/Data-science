@@ -4,42 +4,26 @@ import io
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import Paragraph, Frame, BaseDocTemplate, PageTemplate
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import inch
-import sys
-from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
+from reportlab.lib.enums import TA_CENTER
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 import os
 
+# -----------------------------
+# 1. API НАСТРОЙКА
+# -----------------------------
+API_KEY = "AIzaSyAQOlttcsIrSV99chFUb2g8RIV6zMxXAi4"
 
-# --- 1. Настройка API ключа и модели ---
-YOUR_API_KEY = "AIzaSyDNl02SVlPinCg4nP0LSYs1YiSYbfG6Nac"
+genai.configure(api_key=API_KEY)
 
-try:
-    genai.configure(api_key=YOUR_API_KEY)
-except Exception as e:
-    st.error(f"Ошибка при настройке API: {e}")
-    st.stop()
-    
-model = genai.GenerativeModel("models/gemini-1.5-pro")
-response = model.generate(contents=prompt)
+# 🟢 Рабочая актуальная модель
+MODEL_NAME = "models/gemini-2.5-flash"
 
+model = genai.GenerativeModel(MODEL_NAME)
 
-
-# --- 2. Классы данных ---
-class UserData:
-    def __init__(self, name="", phone="", address="", has_experience=False,
-                 experience_count=0, experiences=None, about_me="", achievements=""):
-        self.name = name
-        self.phone = phone
-        self.address = address
-        self.has_experience = has_experience
-        self.experience_count = experience_count
-        self.experiences = experiences or []
-        self.about_me = about_me
-        self.achievements = achievements
-
-
+# -----------------------------
+# 2. КЛАССЫ ДАННЫХ
+# -----------------------------
 class Experience:
     def __init__(self, year="", company="", position="", description=""):
         self.year = year
@@ -47,162 +31,137 @@ class Experience:
         self.position = position
         self.description = description
 
+class UserData:
+    def __init__(self):
+        self.name = ""
+        self.phone = ""
+        self.address = ""
+        self.about_me = ""
+        self.has_experience = False
+        self.experience_count = 0
+        self.experiences = []
+        self.achievements = ""
 
-# --- 3. Сбор данных пользователя ---
+# -----------------------------
+# 3. СБОР ДАННЫХ
+# -----------------------------
 def collect_user_data():
-    user_data = UserData()
+    user = UserData()
 
-    st.title("📝 Создание резюме")
+    st.title("📝 Генератор резюме")
 
-    user_data.name = st.text_input("👤 ФИО:")
-    user_data.phone = st.text_input("📞 Номер телефона:")
-    user_data.address = st.text_input("🏠 Адрес:")
+    user.name = st.text_input("👤 ФИО:")
+    user.phone = st.text_input("📞 Телефон:")
+    user.address = st.text_input("🏠 Адрес:")
 
-    user_data.has_experience = st.radio("💼Есть ли у вас опыт работы по желаемой должности?", ("Да", "Нет"))
+    user.has_experience = st.radio("Есть опыт работы?", ("Да", "Нет"))
 
-    if user_data.has_experience == "Да":
-        user_data.about_me = st.text_area("🙋‍♀️ Расскажите о себе:", height=100)
-        user_data.experience_count = st.number_input("Сколько мест работы вы хотите указать?", min_value=1, value=1)
+    if user.has_experience == "Да":
+        user.about_me = st.text_area("Расскажите о себе:", height=100)
+        user.experience_count = st.number_input("Сколько мест работы?", min_value=1, value=1)
 
-        user_data.experiences = []  # ← очищаем
+        user.experiences = []
+        for i in range(user.experience_count):
+            st.subheader(f"📌 Опыт #{i+1}")
 
-        for i in range(user_data.experience_count):
-            st.subheader(f"📌 Опыт работы #{i + 1}")
+            year = st.text_input("Год:", key=f"year_{i}")
+            company = st.text_input("Компания:", key=f"company_{i}")
+            position = st.text_input("Должность:", key=f"position_{i}")
+            description = st.text_area("Описание:", key=f"desc_{i}")
 
-            year = st.text_input("📅 Год:", key=f"year_{i}")
-            company = st.text_input("🏢 Компания:", key=f"company_{i}")
-            position = st.text_input("🧑‍💼 Должность:", key=f"position_{i}")
-            description = st.text_area("📝 Описание работы:", key=f"description_{i}")
-
-            # ✔ реально добавляем опыт в список
-            user_data.experiences.append(
-                Experience(year, company, position, description)
-            )
+            user.experiences.append(Experience(year, company, position, description))
 
     else:
-        user_data.about_me = st.text_area("🙋‍♀️ Расскажите о себе:", height=100)
-        user_data.achievements = st.text_area("🏆 Достижения:", height=100)
+        user.about_me = st.text_area("Расскажите о себе:", height=100)
+        user.achievements = st.text_area("Достижения:", height=100)
 
-    return user_data
+    return user
 
-
-# --- 4. Генерация резюме Gemini ---
-def generate_resume(user_data):
+# -----------------------------
+# 4. ГЕНЕРАЦИЯ РЕЗЮМЕ
+# -----------------------------
+def generate_resume(user):
     prompt = f"""
 Создай профессиональное резюме:
 
-ФИО: {user_data.name}
-Телефон: {user_data.phone}
-Адрес: {user_data.address}
+ФИО: {user.name}
+Телефон: {user.phone}
+Адрес: {user.address}
 
+О себе:
+{user.about_me}
 """
 
-    if user_data.has_experience == "Да":
-        prompt += "\nОпыт работы:\n"
-        for i, exp in enumerate(user_data.experiences):
+    if user.has_experience == "Да":
+        prompt += f"\nОпыт работы ({user.experience_count} мест):\n"
+        for i, exp in enumerate(user.experiences):
             prompt += f"""
-Работа #{i+1}:
+Опыт #{i+1}:
 Год: {exp.year}
 Компания: {exp.company}
 Должность: {exp.position}
 Описание: {exp.description}
 """
     else:
-        prompt += f"\nО себе: {user_data.about_me}\n"
-        prompt += f"Достижения: {user_data.achievements}\n"
+        prompt += f"\nДостижения:\n{user.achievements}\n"
 
-    prompt += "\nСформируй структурированное резюме без Markdown."
-    
+    prompt += "\nОформи текст структурировано, красиво и профессионально."
+
     try:
-        model = genai.GenerativeModel("models/gemini-1.5-pro")  # ← ВАЖНО!
-        response = model.generate(
-            contents=prompt
-        )
+        response = model.generate_content(prompt)
         return response.text
     except Exception as e:
-        st.error(f"Ошибка при генерации резюме: {e}")
+        st.error(f"Ошибка: {e}")
         return ""
 
-# --- 5. PDF генерация ---
+# -----------------------------
+# 5. PDF ГЕНЕРАЦИЯ
+# -----------------------------
 def setup_fonts():
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    font_path = os.path.join(script_dir, 'DejaVuSans.ttf')
+    font_path = os.path.join(os.path.dirname(__file__), "DejaVuSans.ttf")
+    if os.path.exists(font_path):
+        pdfmetrics.registerFont(TTFont("DejaVu", font_path))
+        return "DejaVu"
+    return "Helvetica"
 
-    if not os.path.exists(font_path):
-        return 'Helvetica'
-
-    try:
-        pdfmetrics.registerFont(TTFont('DejaVuSans', font_path))
-        return 'DejaVuSans'
-    except:
-        return 'Helvetica'
-
-
-def create_pdf_resume(text):
+def create_pdf(text):
     buffer = io.BytesIO()
     doc = BaseDocTemplate(buffer, pagesize=letter)
     styles = getSampleStyleSheet()
-
     font = setup_fonts()
 
-    title_style = ParagraphStyle(
-        'Title',
-        parent=styles['Title'],
-        fontName=font,
-        alignment=TA_CENTER,
-        fontSize=16
-    )
+    style = ParagraphStyle("Normal", parent=styles["Normal"], fontName=font, fontSize=12)
 
-    normal_style = ParagraphStyle(
-        'Normal',
-        parent=styles['Normal'],
-        fontName=font,
-        fontSize=12,
-        leading=14
-    )
-
-    story = [Paragraph("Резюме", title_style)]
+    story = [Paragraph("Резюме", ParagraphStyle("Title", alignment=TA_CENTER, fontSize=18))]
 
     for line in text.split("\n"):
         if line.strip():
-            story.append(Paragraph(line.strip(), normal_style))
+            story.append(Paragraph(line.strip(), style))
 
-    frame = Frame(doc.leftMargin, doc.bottomMargin, doc.width, doc.height)
-    doc.addPageTemplates([PageTemplate(id='page', frames=frame)])
+    doc.addPageTemplates([PageTemplate(id="main", frames=[Frame(doc.leftMargin, doc.bottomMargin, doc.width, doc.height)])])
     doc.build(story)
 
     buffer.seek(0)
     return buffer.getvalue()
 
-
-# --- 6. Основная страница Streamlit ---
-def page_generate_resume():
-    st.title("Генератор резюме")
-
-    if "user_data" not in st.session_state:
-        st.session_state.user_data = collect_user_data()
-    else:
-        st.session_state.user_data = collect_user_data()
+# -----------------------------
+# 6. UI Streamlit
+# -----------------------------
+def page():
+    user = collect_user_data()
 
     if st.button("✨ Сгенерировать резюме"):
-        if st.session_state.user_data.name and st.session_state.user_data.phone and st.session_state.user_data.address:
-            st.session_state.generated_resume = generate_resume(st.session_state.user_data)
+        if not user.name or not user.phone or not user.address:
+            st.warning("Заполните обязательные поля!")
         else:
-            st.warning("Заполните ФИО, телефон и адрес!")
+            st.session_state.resume = generate_resume(user)
 
-    if "generated_resume" in st.session_state:
-        st.text_area("📄 Предварительный просмотр:", st.session_state.generated_resume, height=400)
+    if "resume" in st.session_state:
+        st.text_area("Предпросмотр:", st.session_state.resume, height=400)
 
         if st.button("📥 Скачать PDF"):
-            pdf_bytes = create_pdf_resume(st.session_state.generated_resume)
-            st.download_button(
-                "Скачать PDF",
-                data=pdf_bytes,
-                file_name=f"resume_{st.session_state.user_data.name.replace(' ', '_')}.pdf",
-                mime="application/pdf"
-            )
+            pdf = create_pdf(st.session_state.resume)
+            st.download_button("Скачать PDF", pdf, file_name="resume.pdf", mime="application/pdf")
 
+page()
 
-# --- 7. Запуск ---
-if __name__ == "__main__":
-    page_generate_resume()
