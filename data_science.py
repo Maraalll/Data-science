@@ -1,12 +1,13 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-import data_science_1
-import data_science_2
-import data_science_3
-import data_science_4
-import data5
 
+
+@st.cache_data
+def load_data():
+    return pd.read_csv("hh_kazakhstan_final_dataset.csv.gz")
+
+df_new = load_data()
 
 # =========================
 # CONFIG (ДОЛЖЕН БЫТЬ ПЕРВЫМ)
@@ -183,6 +184,7 @@ if st.session_state.show_home:
 # SIDEBAR + NAVIGATION
 # =========================
 st.sidebar.title("📌 Навигация")
+
 page = st.sidebar.radio(
     "Выберите страницу:",
     [
@@ -194,13 +196,23 @@ page = st.sidebar.radio(
     ]
 )
 
+# 🔥 ИМПОРТЫ ТОЛЬКО ЗДЕСЬ
 if page == "🔎 Поиск вакансий":
+    import data_science_1
     data_science_1.page_find_vacancies()
+
 elif page == "📝 Генератор резюме":
+    import data_science_3
     data_science_3.page_generate_resume()
+
 elif page == "🌟 Оценка компании":
+    import data_science_2
     data_science_2.page_rate_company()
+
 elif page == "🌍 CityFit AI":
+    import data_science_4
     data_science_4.page_cityfit_ai()
+
 elif page == "🎯 Skill Match/Fit":
+    import data5
     data5.page_skill_match()
