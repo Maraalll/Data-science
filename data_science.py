@@ -152,11 +152,11 @@ if st.session_state.show_home:
     """
 
     # 🔥 КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ — ВЫСОТА
-    components.html(home_html, height=780)
+    components.html(home_html, height=700)
 
     # ✅ КНОПКА ПО ЦЕНТРУ
     st.markdown("""
-    <div style="margin-top:-160px;">
+    <div style="margin-top:-200px;">
     """, unsafe_allow_html=True)
     
     col1, col2, col3 = st.columns([1, 2, 1])
