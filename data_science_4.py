@@ -1,21 +1,36 @@
 import streamlit as st
 import pandas as pd
 
+
 # =========================
-# ЗАГРУЗКА ДАННЫХ
+# ЗАГРУЗКА ДАННЫХ (БЕЗ ОШИБОК)
 # =========================
 @st.cache_data
 def load_data():
     df = pd.read_csv("hh_kazakhstan_final_dataset.csv.gz")
 
-    # обязательные колонки
-    required_cols = [
-        "city",
-        "vacancy_name",
-        "vacancy_url",
-        "cityfit_score"
-    ]
-    df = df.dropna(subset=required_cols)
+    # 🛡️ Унификация колонок
+    column_map = {
+        "name": "vacancy_name",
+        "vacancy_name": "vacancy_name",
+        "url": "vacancy_url",
+        "vacancy_url": "vacancy_url",
+        "area_name": "city",
+        "city": "city"
+    }
+
+    df = df.rename(columns=column_map)
+
+    # если cityfit_score нет — создаём фиктивный (по количеству вакансий)
+    if "cityfit_score" not in df.columns:
+        df["cityfit_score"] = 1.0
+
+    required_cols = ["city", "vacancy_name", "vacancy_url", "cityfit_score"]
+
+    # оставляем только реально существующие
+    existing_cols = [c for c in required_cols if c in df.columns]
+
+    df = df.dropna(subset=existing_cols)
 
     return df
 
@@ -26,15 +41,12 @@ def load_data():
 def page_cityfit_ai():
     st.markdown("## 🌍 CityFit AI")
     st.markdown(
-        "Интеллектуальный модуль, показывающий, **в каких городах выше шанс найти работу** "
+        "Показывает **в каких городах больше всего релевантных вакансий** "
         "по выбранной профессии."
     )
 
     df = load_data()
 
-    # =========================
-    # ВВОД ПРОФЕССИИ
-    # =========================
     profession = st.text_input(
         "🔍 Введите профессию или ключевое слово",
         placeholder="Data Analyst, Python, Marketing..."
@@ -45,7 +57,7 @@ def page_cityfit_ai():
         return
 
     # =========================
-    # ФИЛЬТРАЦИЯ ПО ПРОФЕССИИ
+    # ФИЛЬТРАЦИЯ
     # =========================
     mask = df["vacancy_name"].str.contains(profession, case=False, na=False)
     df_prof = df[mask]
@@ -58,27 +70,24 @@ def page_cityfit_ai():
     # ТОП-10 ГОРОДОВ
     # =========================
     city_stats = (
-        df_prof[df_prof["cityfit_score"] > 0]
+        df_prof
         .groupby("city")
-        .agg(
-            vacancies=("vacancy_name", "count"),
-            cityfit_score=("cityfit_score", "mean")
-        )
+        .agg(vacancies=("vacancy_name", "count"))
         .reset_index()
-        .sort_values("cityfit_score", ascending=False)
+        .sort_values("vacancies", ascending=False)
         .head(10)
     )
 
-    st.markdown("### 🏙️ Топ-10 городов по CityFit")
+    st.markdown("### 🏙️ Топ-10 городов")
 
     # =========================
-    # ВЫВОД ГОРОДОВ + КЛИК
+    # КЛИК → ССЫЛКИ
     # =========================
-    for idx, row in city_stats.iterrows():
+    for _, row in city_stats.iterrows():
         city = row["city"]
-        vacancies_count = row["vacancies"]
+        count = row["vacancies"]
 
-        with st.expander(f"📍 **{city} — {vacancies_count} вакансий**"):
+        with st.expander(f"📍 **{city} — {count} вакансий**"):
             city_vacancies = df_prof[df_prof["city"] == city]
 
             for _, v in city_vacancies.iterrows():
