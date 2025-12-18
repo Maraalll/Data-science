@@ -147,7 +147,7 @@ def create_pdf(text):
 # -----------------------------
 # 6. UI Streamlit
 # -----------------------------
-def page():
+def page_generate_resume():
     user = collect_user_data()
 
     if st.button("✨ Сгенерировать резюме"):
@@ -163,5 +163,5 @@ def page():
             pdf = create_pdf(st.session_state.resume)
             st.download_button("Скачать PDF", pdf, file_name="resume.pdf", mime="application/pdf")
 
-page()
+page_generate_resume()
 
