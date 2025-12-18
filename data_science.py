@@ -185,12 +185,17 @@ if st.session_state.show_home:
         justify-content:center;
     ">
     """, unsafe_allow_html=True)
-    </div>
    
-    if st.session_state.get("start"):
+   
+    start_clicked = st.button(
+        "🚀 Начать с JobBuddy",
+        key="start_jobbuddy"
+    )
+    st.markdown("</div>", unsafe_allow_html=True)
+    if start_clicked:
         st.session_state.show_home = False
         st.rerun()
-    st.markdown("</div>", unsafe_allow_html=True)
+        
 
     st.stop()
 
