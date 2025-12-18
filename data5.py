@@ -7,9 +7,6 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 
-# =========================
-# DATA
-# =========================
 @st.cache_data
 def load_data():
     df = pd.read_csv("hh_kazakhstan_final_dataset.csv.gz")
@@ -23,10 +20,6 @@ def load_data():
 
 df = load_data()
 
-
-# =========================
-# MODEL
-# =========================
 @st.cache_resource
 def build_vectorizer(texts):
     vectorizer = TfidfVectorizer(max_features=5000)
@@ -36,10 +29,6 @@ def build_vectorizer(texts):
 
 vectorizer, vacancy_vectors = build_vectorizer(df["requirements"])
 
-
-# =========================
-# HELPERS
-# =========================
 def clean_text(text):
     text = text.lower()
     text = re.sub(r"[^a-zа-я0-9+# ]", " ", text)
@@ -83,9 +72,6 @@ def match_vacancies(user_text, top_n=5, city="Все города"):
     return results
 
 
-# =========================
-# PAGE UI
-# =========================
 def page_skill_match():
     st.title("🎯 Skill Match / Vacancy Fit")
 
@@ -95,7 +81,7 @@ def page_skill_match():
 
     st.markdown("---")
 
-    # --- user input ---
+
     user_skills = st.text_area(
         "🧠 Введите ваши навыки",
         placeholder="python sql pandas machine learning"
@@ -132,9 +118,7 @@ def page_skill_match():
             st.warning("Нет вакансий по выбранному городу")
             return
 
-        # =========================
-        # VISUALIZATION
-        # =========================
+       
         st.markdown("## 📊 Топ вакансий по соответствию")
 
         chart_df = (
@@ -145,9 +129,7 @@ def page_skill_match():
 
         st.bar_chart(chart_df, height=350)
 
-        # =========================
-        # RESULTS
-        # =========================
+       
         st.markdown("## ✅ Результаты")
 
         for _, row in results.iterrows():
