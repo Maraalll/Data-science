@@ -177,21 +177,16 @@ if st.session_state.show_home:
     components.html(home_html, height=780)
 
     # ✅ КНОПКА ПО ЦЕНТРУ
+    
     st.markdown("""
     <div style="
-        margin-top:-80px;
+        margin-top:-120px;
         display:flex;
         justify-content:center;
     ">
-        st.markdown("""
-        <div style="
-            margin-top:-120px;
-            display:flex;
-            justify-content:center;
-        ">
-        """, unsafe_allow_html=True)
-    </div>
     """, unsafe_allow_html=True)
+    </div>
+   
     if st.session_state.get("start"):
         st.session_state.show_home = False
         st.rerun()
