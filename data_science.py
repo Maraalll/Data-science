@@ -29,170 +29,130 @@ if "show_home" not in st.session_state:
 # =========================
 st.markdown("""
 <style>
-/* ===== ГЛОБАЛЬНЫЙ ФОН ===== */
+/* фон для всего приложения */
 .stApp {
-    background:
-        radial-gradient(circle at top left, rgba(120,190,255,0.35), transparent 55%),
-        radial-gradient(circle at bottom right, rgba(0,180,255,0.35), transparent 60%),
-        linear-gradient(180deg, #f6faff 0%, #eef4ff 100%);
+    background: radial-gradient(circle at top right, #cfe8ff 0%, #f8fbff 35%, #eaf1ff 100%);
 }
 
-/* убираем лишний отступ сверху */
+/* чуть меньше верхний отступ */
 .main {
     padding-top: 0rem;
 }
-</style>
-""", unsafe_allow_html=True)
 
-st.markdown("""
-<style>
-/* ===== КНОПКА JobBuddy ===== */
-.jobbuddy-btn {
-    background: linear-gradient(90deg, #4facfe, #00f2fe);
-    color: white;
-    font-size: 20px;
-    font-weight: 600;
-    padding: 16px 52px;
-    border-radius: 30px;
-    border: none;
-    cursor: pointer;
-    transition: all 0.35s ease;
-    box-shadow: 0 12px 30px rgba(0, 120, 255, 0.35);
-}
-
-/* HOVER */
-.jobbuddy-btn:hover {
-    transform: translateY(-4px) scale(1.03);
-    box-shadow:
-        0 18px 45px rgba(0, 160, 255, 0.55),
-        0 0 25px rgba(0, 200, 255, 0.65);
+/* кнопки streamlit */
+.stButton > button {
+    background: linear-gradient(90deg, #4facfe, #00f2fe) !important;
+    color: white !important;
+    border-radius: 18px !important;
+    padding: 14px 42px !important;
+    font-size: 18px !important;
+    border: none !important;
+    font-weight: 700 !important;
 }
 </style>
 """, unsafe_allow_html=True)
+
 
 # =========================
 # HOME PAGE
 # =========================
 if st.session_state.show_home:
 
+    # ВАЖНО: весь Hero + Cards рендерим через components.html()
     home_html = """
     <style>
-      .hero-wrapper {
-        min-height: 85vh;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-      }
-
       .hero {
-        text-align: center;
+        text-align:center;
+        padding: 90px 20px 50px 20px;
         max-width: 1100px;
         margin: 0 auto;
       }
-
-      .heroIcon {
-        font-size: 60px;
-        margin-bottom: 12px;
-      }
-
+      .heroIcon { font-size:60px; margin-bottom:10px; }
       .heroTitle {
-        font-size: 56px;
-        font-weight: 800;
-        color: #1f2a44;
+        font-size:48px;
+        font-weight:800;
+        color:#1f2a44;
         margin: 0;
       }
-
       .heroSub {
-        font-size: 18px;
-        color: #4a5b7c;
-        margin-top: 14px;
-        line-height: 1.6;
+        font-size:18px;
+        color:#4a5b7c;
+        margin-top:12px;
+        line-height:1.5;
       }
-
-      .heroSub small {
-        font-size: 16px;
+      .heroSub small{
+        font-size:16px;
       }
 
       .cards {
-        display: flex;
-        gap: 24px;
-        justify-content: center;
-        max-width: 1100px;
-        margin-top: 48px;
+        display:flex;
+        gap:24px;
+        justify-content:center;
+        max-width:1100px;
+        margin: 20px auto 0 auto;
         flex-wrap: wrap;
       }
-
       .card {
-        background: white;
-        border-radius: 22px;
-        padding: 26px;
-        box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+        background:white;
+        border-radius:22px;
+        padding:24px;
+        box-shadow:0 12px 30px rgba(0,0,0,0.06);
         width: 320px;
         min-height: 120px;
-        text-align: left;
+        text-align:left;
       }
-
-      .card h4 {
-        margin: 0 0 8px 0;
-        font-size: 20px;
-        color: #1f2a44;
+      .card h4{
+        margin:0 0 8px 0;
+        font-size:20px;
+        color:#1f2a44;
       }
-
-      .card p {
-        margin: 0;
-        color: #4a5b7c;
-        font-size: 15px;
+      .card p{
+        margin:0;
+        color:#4a5b7c;
+        font-size:15px;
       }
     </style>
 
-    <div class="hero-wrapper">
-      <div class="hero">
-          <div class="heroIcon">🎯</div>
-          <h1 class="heroTitle">JobBuddy</h1>
+    <div class="hero">
+        <div class="heroIcon">🎯</div>
+        <h1 class="heroTitle">JobBuddy</h1>
+        <div class="heroSub">
+            Умный поиск работы для студентов<br/>
+            <small>
+              Анализ вакансий, городов и навыков с использованием
+              <b>Data Science & Machine Learning</b>
+            </small>
+        </div>
+    </div>
 
-          <div class="heroSub">
-              Умный поиск работы для студентов<br/>
-              <small>
-                Анализ вакансий, городов и навыков с использованием
-                <b>Data Science & Machine Learning</b>
-              </small>
-          </div>
-
-          <div class="cards">
-              <div class="card">
-                  <h4>🎯 Точные вакансии</h4>
-                  <p>Подбор вакансий под навыки и профессию</p>
-              </div>
-              <div class="card">
-                  <h4>🌍 CityFit AI</h4>
-                  <p>Где проще найти работу</p>
-              </div>
-              <div class="card">
-                  <h4>🤖 ML-анализ</h4>
-                  <p>Решения на основе данных</p>
-              </div>
-          </div>
-      </div>
+    <div class="cards">
+        <div class="card">
+            <h4>🎯 Точные вакансии</h4>
+            <p>Подбор вакансий под навыки и профессию</p>
+        </div>
+        <div class="card">
+            <h4>🌍 CityFit AI</h4>
+            <p>Где проще найти работу</p>
+        </div>
+        <div class="card">
+            <h4>🤖 ML-анализ</h4>
+            <p>Решения на основе данных</p>
+        </div>
     </div>
     """
 
-    # 🔥 КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ — ВЫСОТА
-    components.html(home_html, height=780)
+    components.html(home_html, height=420)
 
-    # ✅ КНОПКА ПО ЦЕНТРУ
-    st.markdown("<div style='text-align:center; margin-top:-120px;'>", unsafe_allow_html=True)
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        if st.button("🚀 Начать с JobBuddy", use_container_width=True):
-            st.session_state.show_home = False
-            st.rerun()
+    st.markdown("<div style='text-align:center; margin-top:20px;'>", unsafe_allow_html=True)
+    if st.button("🚀 Начать с JobBuddy"):
+        st.session_state.show_home = False
+        st.rerun()
     st.markdown("</div>", unsafe_allow_html=True)
 
     st.stop()
 
 
-   
+# =========================
 # SIDEBAR + NAVIGATION
 # =========================
 st.sidebar.title("📌 Навигация")
