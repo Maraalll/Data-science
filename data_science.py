@@ -29,29 +29,46 @@ if "show_home" not in st.session_state:
 # =========================
 st.markdown("""
 <style>
-/* фон для всего приложения */
+/* ===== ГЛОБАЛЬНЫЙ ФОН ===== */
 .stApp {
-    background: radial-gradient(circle at top right, #cfe8ff 0%, #f8fbff 35%, #eaf1ff 100%);
+    background:
+        radial-gradient(circle at top left, rgba(120,190,255,0.35), transparent 55%),
+        radial-gradient(circle at bottom right, rgba(0,180,255,0.35), transparent 60%),
+        linear-gradient(180deg, #f6faff 0%, #eef4ff 100%);
 }
 
-/* чуть меньше верхний отступ */
+/* убираем лишний отступ сверху */
 .main {
     padding-top: 0rem;
-}
-
-/* кнопки streamlit */
-.stButton > button {
-    background: linear-gradient(90deg, #4facfe, #00f2fe) !important;
-    color: white !important;
-    border-radius: 18px !important;
-    padding: 14px 42px !important;
-    font-size: 18px !important;
-    border: none !important;
-    font-weight: 700 !important;
 }
 </style>
 """, unsafe_allow_html=True)
 
+st.markdown("""
+<style>
+/* ===== КНОПКА JobBuddy ===== */
+.jobbuddy-btn {
+    background: linear-gradient(90deg, #4facfe, #00f2fe);
+    color: white;
+    font-size: 20px;
+    font-weight: 600;
+    padding: 16px 52px;
+    border-radius: 30px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.35s ease;
+    box-shadow: 0 12px 30px rgba(0, 120, 255, 0.35);
+}
+
+/* HOVER */
+.jobbuddy-btn:hover {
+    transform: translateY(-4px) scale(1.03);
+    box-shadow:
+        0 18px 45px rgba(0, 160, 255, 0.55),
+        0 0 25px rgba(0, 200, 255, 0.65);
+}
+</style>
+""", unsafe_allow_html=True)
 
 # =========================
 # HOME PAGE
@@ -160,7 +177,19 @@ if st.session_state.show_home:
     components.html(home_html, height=780)
 
     # ✅ КНОПКА ПО ЦЕНТРУ
-    st.markdown("<div style='text-align:center; margin-top:30px;'>", unsafe_allow_html=True)
+    st.markdown("""
+    <div style="
+        margin-top:-80px;
+        display:flex;
+        justify-content:center;
+    ">
+        <form method="post">
+            <button class="jobbuddy-btn" name="start">
+                🚀 Начать с JobBuddy
+            </button>
+        </form>
+    </div>
+    """, unsafe_allow_html=True)
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         if st.button("🚀 Начать с JobBuddy", use_container_width=True):
