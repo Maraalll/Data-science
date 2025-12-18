@@ -10,7 +10,8 @@ from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 import os
-
+st.write("Gemini SDK:", genai.__version__)
+st.write("Using API:", genai._api_version)   # ← покажет v1 или v1beta
 # --- Показываем версию Gemini SDK ---
 try:
     st.write("🧩 Gemini SDK version:", genai.__version__)
