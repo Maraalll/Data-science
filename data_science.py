@@ -131,10 +131,6 @@ if st.session_state.show_home:
 
           <div class="heroSub">
               Умный поиск работы для студентов<br/>
-              <small>
-                Анализ вакансий, городов и навыков с использованием
-                <b>Data Science & Machine Learning</b>
-              </small>
           </div>
 
           <div class="cards">
