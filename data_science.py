@@ -1,25 +1,15 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-# =========================
-# CONFIG (ДОЛЖЕН БЫТЬ ПЕРВЫМ)
-# =========================
 st.set_page_config(
     page_title="JobBuddy",
     page_icon="🎯",
     layout="wide"
 )
 
-# =========================
-# STATE
-# =========================
 if "show_home" not in st.session_state:
     st.session_state.show_home = True
 
-
-# =========================
-# GLOBAL CSS (фон и кнопки)
-# =========================
 st.markdown("""
 <style>
 /* фон для всего приложения */
@@ -45,12 +35,6 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-
-# =========================
-# HOME PAGE
-# =========================
-# =========================
-# HOME PAGE
 if st.session_state.show_home:
 
     home_html = """
@@ -151,10 +135,8 @@ if st.session_state.show_home:
     </div>
     """
 
-    # 🔥 КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ — ВЫСОТА
     components.html(home_html, height=700)
 
-    # ✅ КНОПКА ПО ЦЕНТРУ
     st.markdown("""
     <div style="margin-top:-200px;">
     """, unsafe_allow_html=True)
@@ -168,9 +150,6 @@ if st.session_state.show_home:
 
     st.stop()
 
-# =========================
-# SIDEBAR + NAVIGATION
-# =========================
 st.sidebar.title("📌 Навигация")
 
 page = st.sidebar.radio(
@@ -184,7 +163,6 @@ page = st.sidebar.radio(
     ]
 )
 
-# 🔥 ИМПОРТЫ ТОЛЬКО ЗДЕСЬ
 if page == "🔎 Поиск вакансий":
     import data_science_1
     data_science_1.page_find_vacancies()
