@@ -17,28 +17,30 @@ def load_vacancies():
 
 
 # ======================================================
-# CityFit AI — анализ ТОЛЬКО по профессии
+# CityFit AI — по профессии + раскрытие вакансий
 # ======================================================
 def cityfit_ai_by_profession(profession: str):
     df = load_vacancies()
 
     # --- фильтр по профессии ---
-    df = df[df["name"].str.contains(profession, case=False, na=False)]
+    df_prof = df[
+        df["name"].str.contains(profession, case=False, na=False)
+    ]
 
-    if df.empty:
+    if df_prof.empty:
         st.warning("⚠️ По этой профессии вакансий не найдено")
         return
 
     # --- статистика по городам ---
     city_stats = (
-        df["city"]
+        df_prof["city"]
         .dropna()
         .value_counts()
         .reset_index()
     )
     city_stats.columns = ["city", "vacancies"]
 
-    # --- CityFit Score (лог-нормализация) ---
+    # --- CityFit Score ---
     city_stats["score"] = (
         np.log1p(city_stats["vacancies"])
         / np.log1p(city_stats["vacancies"].max())
@@ -48,42 +50,71 @@ def cityfit_ai_by_profession(profession: str):
     city_stats = city_stats.sort_values("score", ascending=False)
 
     # ======================================================
-    # UI — РЕЗУЛЬТАТЫ
+    # UI
     # ======================================================
-    st.markdown("### 🌍 Города с вакансиями по выбранной профессии")
-    st.info(f"🔎 Профессия: **{profession}**")
+    st.markdown("## 🌍 Города с вакансиями по выбранной профессии")
+    st.info(f"🔎 **Профессия:** {profession}")
 
-    for _, row in city_stats.head(7).iterrows():
+    for _, row in city_stats.iterrows():
         city = row["city"]
-        vacancies = int(row["vacancies"])
-        score = int(row["score"])
+        vacancies = row["vacancies"]
+        score = row["score"]
 
-        # --- карточка ---
+        # --- карточка города ---
         st.markdown(
             f"""
             <div style="
                 background:#f8fbff;
                 padding:16px;
                 border-radius:14px;
-                margin-bottom:10px;
-                border:1px solid #e6ecf5;
+                margin-bottom:8px;
+                border:1px solid #e3ecf7;
             ">
-                ⭐ <b>{city}</b> — {vacancies} вакансий  
-                <span style="float:right; font-weight:600; color:#1f77b4;">
-                    {score}%
-                </span>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="font-size:18px;">
+                        ⭐ <b>{city}</b> — {vacancies} вакансий
+                    </div>
+                    <div style="font-weight:700; color:#1f77b4;">
+                        {score}%
+                    </div>
+                </div>
+                <div style="
+                    background:#e6ecf5;
+                    border-radius:10px;
+                    height:8px;
+                    margin-top:10px;
+                ">
+                    <div style="
+                        width:{score}%;
+                        background:linear-gradient(90deg,#4facfe,#00f2fe);
+                        height:8px;
+                        border-radius:10px;
+                    "></div>
+                </div>
             </div>
             """,
             unsafe_allow_html=True
         )
 
-        # --- стабильный прогресс-бар ---
-        st.progress(score / 100)
+        # ======================================================
+        # 🔽 РАСКРЫТИЕ ВАКАНСИЙ ПО ГОРОДУ
+        # ======================================================
+        with st.expander(f"📋 Показать вакансии в {city}"):
+            city_vacancies = df_prof[df_prof["city"] == city]
+
+            for _, v in city_vacancies.iterrows():
+                st.markdown(
+                    f"""
+                    • **{v['name']}**  
+                    🏢 {v.get('company', 'Компания не указана')}  
+                    🔗 [Открыть вакансию]({v.get('url', '#')})
+                    """
+                )
 
     # ======================================================
     # 📊 ГРАФИК
     # ======================================================
-    st.markdown("### 📊 CityFit Score по городам")
+    st.markdown("## 📊 CityFit Score по городам")
     st.bar_chart(city_stats.set_index("city")[["score"]])
 
     # ======================================================
@@ -92,14 +123,14 @@ def cityfit_ai_by_profession(profession: str):
     with st.expander("🔍 Почему именно эти города?"):
         st.markdown(
             """
-            **CityFit AI** анализирует рынок вакансий по выбранной профессии:
+            **CityFit AI** анализирует рынок вакансий:
 
-            • 📌 количество вакансий в городе  
-            • ⚖️ относительную силу рынка труда  
-            • 🧠 сравнение городов между собой  
+            • 📌 количество вакансий по профессии  
+            • ⚖️ сравнение городов между собой  
+            • 🧠 нормализацию, чтобы не было перекоса  
 
             **CityFit Score** — относительный показатель (0–100),
-            а не реальный процент трудоустройства.
+            а не гарантия трудоустройства.
             """
         )
 
@@ -109,28 +140,17 @@ def cityfit_ai_by_profession(profession: str):
 # ======================================================
 def page_cityfit_ai():
     st.markdown("## 🌍 CityFit AI")
-    st.markdown(
-        """
-        <p style="color:gray; font-size:16px;">
-        Интеллектуальный ML-модуль, который показывает,
-        <b>в каких городах выше шанс найти работу</b>
-        по выбранной профессии
-        </p>
-        """,
-        unsafe_allow_html=True
-    )
-
-    st.markdown("### 🔎 Анализ по профессии")
     st.caption(
-        "Введите профессию или ключевое слово — анализ выполняется по всем городам Казахстана"
+        "Интеллектуальный ML-модуль, который показывает, "
+        "в каких городах выше шанс найти работу по профессии"
     )
 
     profession = st.text_input(
-        "Например: Data Analyst, Marketing, Python",
+        "🔎 Введите профессию или ключевое слово",
         placeholder="Data Analyst"
     )
 
     if profession:
         cityfit_ai_by_profession(profession)
     else:
-        st.info("✍️ Введите профессию, чтобы увидеть анализ по городам")
+        st.info("✍️ Введите профессию, чтобы начать анализ")
