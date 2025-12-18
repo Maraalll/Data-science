@@ -160,7 +160,7 @@ if st.session_state.show_home:
 
     # ✅ КНОПКА ПО ЦЕНТРУ
     st.markdown("""
-    <div style="margin-top:-120px;">
+    <div style="margin-top:-160px;">
     """, unsafe_allow_html=True)
     
     col1, col2, col3 = st.columns([1, 2, 1])
