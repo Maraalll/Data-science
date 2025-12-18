@@ -1,14 +1,6 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-
-
-@st.cache_data
-def load_data():
-    return pd.read_csv("hh_kazakhstan_final_dataset.csv.gz")
-
-df_new = load_data()
-
 # =========================
 # CONFIG (ДОЛЖЕН БЫТЬ ПЕРВЫМ)
 # =========================
