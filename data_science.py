@@ -6,12 +6,12 @@ import data_science_4
 import data5
 
 st.set_page_config(
-    page_title="Платформа для поиска работы",
+    page_title="JobBuddy",
     page_icon="🎯",
     layout="wide"
 )
 
-# ===== ИНИЦИАЛИЗАЦИЯ =====
+# ===== СОСТОЯНИЕ =====
 if "show_home" not in st.session_state:
     st.session_state.show_home = True
 
@@ -28,7 +28,7 @@ st.markdown("""
 
 .hero {
     text-align: center;
-    padding: 90px 20px 70px 20px;
+    padding: 110px 20px 80px 20px;
 }
 
 .hero-title {
@@ -61,12 +61,11 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ===== ГЛАВНАЯ СТРАНИЦА =====
+# ===== ГЛАВНАЯ =====
 if st.session_state.show_home:
 
     st.markdown("""
     <div class="hero">
-
         <div style="font-size:60px; margin-bottom:10px;">🎯</div>
 
         <div class="hero-title">
@@ -76,16 +75,12 @@ if st.session_state.show_home:
         <div class="hero-subtitle">
             Умный поиск работы для студентов<br>
             <span style="font-size:16px;">
-            Анализ вакансий, городов и навыков с использованием
-            <b>Data Science & Machine Learning</b>
+                Анализ вакансий, городов и навыков с использованием
+                <b>Data Science & Machine Learning</b>
             </span>
         </div>
-
     </div>
-    """, unsafe_allow_html=True)
 
-
-    st.markdown("""
     <div style="display:flex; gap:24px; justify-content:center; max-width:1000px; margin:auto;">
         <div class="card" style="flex:1;">
             <h4>🎯 Точные вакансии</h4>
@@ -125,7 +120,6 @@ page = st.sidebar.radio(
     ]
 )
 
-# ===== СТРАНИЦЫ =====
 if page == "🔎 Поиск вакансий":
     data_science_1.page_find_vacancies()
 elif page == "📝 Генератор резюме":
