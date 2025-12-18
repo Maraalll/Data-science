@@ -183,11 +183,13 @@ if st.session_state.show_home:
         display:flex;
         justify-content:center;
     ">
-        <form method="post">
-            <button class="jobbuddy-btn" name="start">
-                🚀 Начать с JobBuddy
-            </button>
-        </form>
+        st.markdown("""
+        <div style="
+            margin-top:-120px;
+            display:flex;
+            justify-content:center;
+        ">
+        """, unsafe_allow_html=True)
     </div>
     """, unsafe_allow_html=True)
     if st.session_state.get("start"):
