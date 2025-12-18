@@ -10,16 +10,6 @@ from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 import os
-try:
-    version = genai.__version__
-    st.write("Gemini SDK version:", version)
-except:
-    st.write("Не удалось определить версию SDK")# ← покажет v1 или v1beta
-# --- Показываем версию Gemini SDK ---
-try:
-    st.write("🧩 Gemini SDK version:", genai.__version__)
-except:
-    st.write("Ошибка: не удалось определить версию библиотеки")
 
 
 # --- 1. Настройка API ключа и модели ---
@@ -30,9 +20,10 @@ try:
 except Exception as e:
     st.error(f"Ошибка при настройке API: {e}")
     st.stop()
+    
+model = genai.GenerativeModel("models/gemini-1.5-pro")
+response = model.generate(contents=prompt)
 
-# ✔ единственно правильная модель
-model = genai.GenerativeModel("gemini-1.5-pro")
 
 
 # --- 2. Классы данных ---
@@ -97,39 +88,40 @@ def collect_user_data():
 
 # --- 4. Генерация резюме Gemini ---
 def generate_resume(user_data):
-
     prompt = f"""
-Сгенерируй профессиональное резюме:
+Создай профессиональное резюме:
 
 ФИО: {user_data.name}
 Телефон: {user_data.phone}
 Адрес: {user_data.address}
+
 """
 
     if user_data.has_experience == "Да":
-        prompt += f"\nОпыт работы ({user_data.experience_count} мест):\n"
+        prompt += "\nОпыт работы:\n"
         for i, exp in enumerate(user_data.experiences):
             prompt += f"""
-Опыт #{i+1}:
+Работа #{i+1}:
 Год: {exp.year}
 Компания: {exp.company}
 Должность: {exp.position}
 Описание: {exp.description}
 """
-
     else:
         prompt += f"\nО себе: {user_data.about_me}\n"
         prompt += f"Достижения: {user_data.achievements}\n"
 
-    prompt += "\nОформи текст структурировано и профессионально."
-
+    prompt += "\nСформируй структурированное резюме без Markdown."
+    
     try:
-        response = model.generate_content(prompt)
+        model = genai.GenerativeModel("models/gemini-1.5-pro")  # ← ВАЖНО!
+        response = model.generate(
+            contents=prompt
+        )
         return response.text
     except Exception as e:
         st.error(f"Ошибка при генерации резюме: {e}")
         return ""
-
 
 # --- 5. PDF генерация ---
 def setup_fonts():
