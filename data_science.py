@@ -5,56 +5,134 @@ import data_science_3
 import data_science_4
 import data5 
 
-
 st.set_page_config(
     page_title="Платформа для поиска работы",
     page_icon="💼",
     layout="wide"
 )
+if "show_home" not in st.session_state:
+    st.session_state.show_home = True
+    
+st.markdown("""
+<style>
+
+/* ===== ОСНОВНОЙ ФОН ===== */
+.stApp {
+    background: radial-gradient(circle at top right, #cfe8ff 0%, #f8fbff 35%, #eaf1ff 100%);
+}
+
+/* ===== УБИРАЕМ СТАНДАРТНЫЕ ОТСТУПЫ ===== */
+.main {
+    padding-top: 0rem;
+}
+
+/* ===== HERO SECTION ===== */
+.hero {
+    text-align: center;
+    padding: 90px 20px 70px 20px;
+}
+
+/* ===== ЗАГОЛОВОК ===== */
+.hero-title {
+    font-size: 48px;
+    font-weight: 800;
+    color: #1f2a44;
+}
+
+/* ===== ПОДЗАГОЛОВОК ===== */
+.hero-subtitle {
+    font-size: 18px;
+    color: #4a5b7c;
+    margin-top: 12px;
+}
+
+/* ===== КНОПКА ===== */
+.hero-button {
+    margin-top: 40px;
+    background: linear-gradient(90deg, #4facfe, #00f2fe);
+    color: white;
+    border-radius: 18px;
+    padding: 14px 42px;
+    font-size: 18px;
+    border: none;
+}
+
+/* ===== КАРТОЧКИ ===== */
+.card {
+    background: white;
+    border-radius: 22px;
+    padding: 24px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.06);
+    text-align: left;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
 
 # ===== Инициализация состояния =====
-if "entered" not in st.session_state:
-    st.session_state.entered = False
-if not st.session_state.entered:
-    st.markdown(
-        """
-        <div style="text-align:center; padding: 80px 0;">
-            <h1 style="font-size:48px;">👋 Добро пожаловать!</h1>
-            <p style="font-size:20px; margin-top:20px;">
-                Платформа для поиска вакансий для студентов и выпускников
-                с использованием Data Science и Machine Learning
-            </p>
-            <p style="color:gray; font-size:16px;">
-                Найди работу. Проанализируй компанию. Создай резюме.
-            </p>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+st.markdown("""
+<div class="hero">
 
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        if st.button("🚀 Начать", use_container_width=True):
-            st.session_state.entered = True
-            st.rerun()
+    <div style="font-size:60px;">🎯</div>
+
+    <div class="hero-title">
+        Умный поиск работы для студентов
+    </div>
+
+    <div class="hero-subtitle">
+        Анализ вакансий, городов и навыков с использованием <b>Data Science & Machine Learning</b>
+    </div>
+
+</div>
+""", unsafe_allow_html=True)
+
+if st.session_state.show_home:
+
+    st.markdown("""
+    <div class="hero">
+        <div style="font-size:60px;">🎯</div>
+        <div class="hero-title">
+            Умный поиск работы для студентов
+        </div>
+        <div class="hero-subtitle">
+            Анализ вакансий, городов и навыков с использованием
+            <b>Data Science & Machine Learning</b>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div style="display:flex; gap:24px; justify-content:center; max-width:1000px; margin:auto;">
+
+        <div class="card" style="flex:1;">
+            <h4>🎯 Точные вакансии</h4>
+            <p>Подбор вакансий под навыки и профессию</p>
+        </div>
+
+        <div class="card" style="flex:1;">
+            <h4>🌍 CityFit AI</h4>
+            <p>Показывает, где проще найти работу</p>
+        </div>
+
+        <div class="card" style="flex:1;">
+            <h4>🤖 ML-анализ</h4>
+            <p>Решения на основе данных</p>
+        </div>
+
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("<div style='text-align:center;'>", unsafe_allow_html=True)
+
+    if st.button("🚀 Начать"):
+        st.session_state.show_home = False
+
+    st.markdown("</div>", unsafe_allow_html=True)
 
     st.stop()
-# ===== СТИЛИ КНОПОК =====
-st.markdown(
-    """
-    <style>
-    .stButton>button {
-        background-color: #1f77b4 !important;
-        color: white !important;
-        font-weight: bold;
-        padding: 10px 20px;
-        border-radius: 12px;
-        border: none;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+
+
 
 # ===== SIDEBAR =====
 st.sidebar.title("📌 Навигация")
