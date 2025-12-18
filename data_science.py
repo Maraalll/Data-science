@@ -66,18 +66,24 @@ if st.session_state.show_home:
 
     st.markdown("""
     <div class="hero">
-        <div style="font-size:60px;">🎯</div>
+
+        <div style="font-size:60px; margin-bottom:10px;">🎯</div>
 
         <div class="hero-title">
-            Умный поиск работы для студентов
+            JobBuddy
         </div>
 
         <div class="hero-subtitle">
+            Умный поиск работы для студентов<br>
+            <span style="font-size:16px;">
             Анализ вакансий, городов и навыков с использованием
             <b>Data Science & Machine Learning</b>
+            </span>
         </div>
+
     </div>
     """, unsafe_allow_html=True)
+
 
     st.markdown("""
     <div style="display:flex; gap:24px; justify-content:center; max-width:1000px; margin:auto;">
@@ -99,7 +105,7 @@ if st.session_state.show_home:
     """, unsafe_allow_html=True)
 
     st.markdown("<div style='text-align:center; margin-top:40px;'>", unsafe_allow_html=True)
-    if st.button("🚀 Начать"):
+    if st.button("🚀 Начать с JobBuddy"):
         st.session_state.show_home = False
         st.rerun()
     st.markdown("</div>", unsafe_allow_html=True)
