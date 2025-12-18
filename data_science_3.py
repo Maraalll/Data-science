@@ -19,7 +19,7 @@ except:
 
 
 # --- 1. Настройка API ключа и модели ---
-YOUR_API_KEY = "AIzaSyBJsJU6FKuJDyI-gRTFmGwgPkoT6RynsOc"
+YOUR_API_KEY = "AIzaSyDNl02SVlPinCg4nP0LSYs1YiSYbfG6Nac"
 
 try:
     genai.configure(api_key=YOUR_API_KEY)
