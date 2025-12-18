@@ -3,10 +3,6 @@ import pandas as pd
 import os
 import numpy as np
 
-
-# ======================================================
-# Загрузка данных
-# ======================================================
 @st.cache_data
 def load_vacancies():
     file_path = os.path.join(
@@ -15,14 +11,9 @@ def load_vacancies():
     )
     return pd.read_csv(file_path)
 
-
-# ======================================================
-# CityFit AI — по профессии + раскрытие вакансий
-# ======================================================
 def cityfit_ai_by_profession(profession: str):
     df = load_vacancies()
 
-    # --- фильтр по профессии ---
     df_prof = df[
         df["name"].str.contains(profession, case=False, na=False)
     ]
@@ -31,7 +22,6 @@ def cityfit_ai_by_profession(profession: str):
         st.warning("⚠️ По этой профессии вакансий не найдено")
         return
 
-    # --- статистика по городам ---
     city_stats = (
         df_prof["city"]
         .dropna()
@@ -40,7 +30,6 @@ def cityfit_ai_by_profession(profession: str):
     )
     city_stats.columns = ["city", "vacancies"]
 
-    # --- CityFit Score ---
     city_stats["score"] = (
         np.log1p(city_stats["vacancies"])
         / np.log1p(city_stats["vacancies"].max())
@@ -49,9 +38,6 @@ def cityfit_ai_by_profession(profession: str):
 
     city_stats = city_stats.sort_values("score", ascending=False)
 
-    # ======================================================
-    # UI
-    # ======================================================
     st.markdown("## 🌍 Города с вакансиями по выбранной профессии")
     st.info(f"🔎 **Профессия:** {profession}")
 
@@ -60,7 +46,7 @@ def cityfit_ai_by_profession(profession: str):
         vacancies = row["vacancies"]
         score = row["score"]
 
-        # --- карточка города ---
+    
         st.markdown(
             f"""
             <div style="
@@ -96,9 +82,7 @@ def cityfit_ai_by_profession(profession: str):
             unsafe_allow_html=True
         )
 
-        # ======================================================
-        # 🔽 РАСКРЫТИЕ ВАКАНСИЙ ПО ГОРОДУ
-        # ======================================================
+      
         with st.expander(f"📋 Показать вакансии в {city}"):
             city_vacancies = df_prof[df_prof["city"] == city]
 
@@ -111,15 +95,10 @@ def cityfit_ai_by_profession(profession: str):
                     """
                 )
 
-    # ======================================================
-    # 📊 ГРАФИК
-    # ======================================================
     st.markdown("## 📊 CityFit Score по городам")
     st.bar_chart(city_stats.set_index("city")[["score"]])
 
-    # ======================================================
-    # 🔍 Explainable AI
-    # ======================================================
+
     with st.expander("🔍 Почему именно эти города?"):
         st.markdown(
             """
@@ -135,9 +114,6 @@ def cityfit_ai_by_profession(profession: str):
         )
 
 
-# ======================================================
-# СТРАНИЦА CityFit AI
-# ======================================================
 def page_cityfit_ai():
     st.markdown("## 🌍 CityFit AI")
     st.caption(
