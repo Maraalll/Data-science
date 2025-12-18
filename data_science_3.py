@@ -11,6 +11,13 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 import os
 
+# --- Показываем версию Gemini SDK ---
+try:
+    st.write("🧩 Gemini SDK version:", genai.__version__)
+except:
+    st.write("Ошибка: не удалось определить версию библиотеки")
+
+
 # --- 1. Настройка API ключа и модели ---
 YOUR_API_KEY = "AIzaSyBJsJU6FKuJDyI-gRTFmGwgPkoT6RynsOc"
 
@@ -203,4 +210,3 @@ def page_generate_resume():
 # --- 7. Запуск ---
 if __name__ == "__main__":
     page_generate_resume()
-
