@@ -3,52 +3,54 @@ import data_science_1
 import data_science_2
 import data_science_3
 import data_science_4
-import data5 
+import data5
 
 st.set_page_config(
     page_title="Платформа для поиска работы",
-    page_icon="💼",
+    page_icon="🎯",
     layout="wide"
 )
+
+# ===== ИНИЦИАЛИЗАЦИЯ =====
 if "show_home" not in st.session_state:
     st.session_state.show_home = True
-    
+
+# ===== СТИЛИ =====
 st.markdown("""
 <style>
-
-/* ===== ОСНОВНОЙ ФОН ===== */
 .stApp {
     background: radial-gradient(circle at top right, #cfe8ff 0%, #f8fbff 35%, #eaf1ff 100%);
 }
 
-/* ===== УБИРАЕМ СТАНДАРТНЫЕ ОТСТУПЫ ===== */
 .main {
     padding-top: 0rem;
 }
 
-/* ===== HERO SECTION ===== */
 .hero {
     text-align: center;
     padding: 90px 20px 70px 20px;
 }
 
-/* ===== ЗАГОЛОВОК ===== */
 .hero-title {
     font-size: 48px;
     font-weight: 800;
     color: #1f2a44;
 }
 
-/* ===== ПОДЗАГОЛОВОК ===== */
 .hero-subtitle {
     font-size: 18px;
     color: #4a5b7c;
     margin-top: 12px;
 }
 
-/* ===== КНОПКА ===== */
-.hero-button {
-    margin-top: 40px;
+.card {
+    background: white;
+    border-radius: 22px;
+    padding: 24px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.06);
+}
+
+.stButton > button {
     background: linear-gradient(90deg, #4facfe, #00f2fe);
     color: white;
     border-radius: 18px;
@@ -56,45 +58,20 @@ st.markdown("""
     font-size: 18px;
     border: none;
 }
-
-/* ===== КАРТОЧКИ ===== */
-.card {
-    background: white;
-    border-radius: 22px;
-    padding: 24px;
-    box-shadow: 0 12px 30px rgba(0,0,0,0.06);
-    text-align: left;
-}
-
 </style>
 """, unsafe_allow_html=True)
 
-
-# ===== Инициализация состояния =====
-st.markdown("""
-<div class="hero">
-
-    <div style="font-size:60px;">🎯</div>
-
-    <div class="hero-title">
-        Умный поиск работы для студентов
-    </div>
-
-    <div class="hero-subtitle">
-        Анализ вакансий, городов и навыков с использованием <b>Data Science & Machine Learning</b>
-    </div>
-
-</div>
-""", unsafe_allow_html=True)
-
+# ===== ГЛАВНАЯ СТРАНИЦА =====
 if st.session_state.show_home:
 
     st.markdown("""
     <div class="hero">
         <div style="font-size:60px;">🎯</div>
+
         <div class="hero-title">
             Умный поиск работы для студентов
         </div>
+
         <div class="hero-subtitle">
             Анализ вакансий, городов и навыков с использованием
             <b>Data Science & Machine Learning</b>
@@ -104,7 +81,6 @@ if st.session_state.show_home:
 
     st.markdown("""
     <div style="display:flex; gap:24px; justify-content:center; max-width:1000px; margin:auto;">
-
         <div class="card" style="flex:1;">
             <h4>🎯 Точные вакансии</h4>
             <p>Подбор вакансий под навыки и профессию</p>
@@ -112,32 +88,28 @@ if st.session_state.show_home:
 
         <div class="card" style="flex:1;">
             <h4>🌍 CityFit AI</h4>
-            <p>Показывает, где проще найти работу</p>
+            <p>Где проще найти работу</p>
         </div>
 
         <div class="card" style="flex:1;">
             <h4>🤖 ML-анализ</h4>
             <p>Решения на основе данных</p>
         </div>
-
     </div>
     """, unsafe_allow_html=True)
 
-    st.markdown("<div style='text-align:center;'>", unsafe_allow_html=True)
-
+    st.markdown("<div style='text-align:center; margin-top:40px;'>", unsafe_allow_html=True)
     if st.button("🚀 Начать"):
         st.session_state.show_home = False
-
+        st.rerun()
     st.markdown("</div>", unsafe_allow_html=True)
 
     st.stop()
 
-
-
 # ===== SIDEBAR =====
 st.sidebar.title("📌 Навигация")
 page = st.sidebar.radio(
-    "📄 Выберите страницу:",
+    "Выберите страницу:",
     [
         "🔎 Поиск вакансий",
         "📝 Генератор резюме",
@@ -147,7 +119,7 @@ page = st.sidebar.radio(
     ]
 )
 
-# ===== НАВИГАЦИЯ =====
+# ===== СТРАНИЦЫ =====
 if page == "🔎 Поиск вакансий":
     data_science_1.page_find_vacancies()
 elif page == "📝 Генератор резюме":
